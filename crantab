@@ -1,0 +1,127 @@
+Sur Ubuntu, vous pouvez utiliser l'utilitaire `cron` pour planifier des tâches. Voici comment vous pouvez créer et gérer des tâches planifiées avec `cron` :
+
+### 1. Éditer la liste des tâches planifiées (`crontab`) :
+
+Pour éditer la liste des tâches planifiées pour l'utilisateur actuel, vous pouvez utiliser la commande suivante :
+
+```bash
+crontab -e
+```
+
+Si vous souhaitez éditer la liste des tâches planifiées pour un utilisateur spécifique, utilisez :
+
+```bash
+sudo crontab -u <nom_utilisateur> -e
+```
+
+Cela ouvrira le fichier `crontab` dans votre éditeur de texte par défaut.
+
+### 2. Ajouter des tâches planifiées :
+
+Dans le fichier `crontab`, vous pouvez ajouter des lignes pour planifier vos tâches. Chaque ligne suit un format spécifique :
+
+```
+* * * * * commande à exécuter
+- - - - -
+| | | | |
+| | | | ----- Jour de la semaine (0 - 7) (Dimanche est 0 ou 7, lundi est 1, etc.)
+| | | ------- Mois (1 - 12)
+| | --------- Jour du mois (1 - 31)
+| ----------- Heure (0 - 23)
+------------- Minute (0 - 59)
+```
+
+Par exemple, pour exécuter une tâche toutes les heures, vous pouvez utiliser :
+
+```
+0 * * * * /chemin/vers/votre/commande
+```
+
+### 3. Gérer les tâches planifiées :
+
+- Pour lister les tâches planifiées de l'utilisateur actuel :
+  
+  ```bash
+  crontab -l
+  ```
+
+- Pour lister les tâches planifiées d'un utilisateur spécifique :
+
+  ```bash
+  sudo crontab -u <nom_utilisateur> -l
+  ```
+
+- Pour supprimer toutes les tâches planifiées de l'utilisateur actuel :
+
+  ```bash
+  crontab -r
+  ```
+
+- Pour supprimer toutes les tâches planifiées d'un utilisateur spécifique :
+
+  ```bash
+  sudo crontab -u <nom_utilisateur> -r
+  ```
+
+### Exemple :
+
+Supposons que vous vouliez sauvegarder votre base de données MySQL toutes les nuits à minuit. Vous pourriez ajouter une ligne comme celle-ci à votre `crontab` :
+
+```bash
+0 0 * * * /usr/bin/mysqldump -u <utilisateur> -p<mdp> <base_de_données> > /chemin/vers/sauvegarde.sql
+```
+
+Cela exécutera la commande de sauvegarde MySQL (`mysqldump`) tous les jours à minuit.
+
+N'oubliez pas de remplacer `<utilisateur>`, `<mdp>`, `<base_de_données>` et `/chemin/vers/sauvegarde.sql` par les valeurs appropriées pour votre configuration. Assurez-vous également que la commande que vous utilisez est accessible via le chemin complet ou modifiez le `PATH` en conséquence dans votre `crontab`.
+
+
+
+
+
+
+
+Pour exécuter un script bash qui supprime les fichiers temporaires et planifier cette action pour qu'elle se produise une fois par semaine, vous pouvez suivre ces étapes :
+
+### 1. Créez un script bash pour supprimer les fichiers temporaires :
+
+Créez un fichier nommé, par exemple, `supprimer_temporaires.sh` et ajoutez le script pour supprimer les fichiers temporaires :
+
+```bash
+#!/bin/bash
+
+# Définissez le répertoire contenant les fichiers temporaires
+REP_TEMP=/chemin/vers/vos/fichiers/temporaires
+
+# Supprimez les fichiers temporaires
+rm -f $REP_TEMP/*
+```
+
+Assurez-vous de remplacer `/chemin/vers/vos/fichiers/temporaires` par le chemin réel de votre répertoire contenant les fichiers temporaires.
+
+### 2. Donnez des permissions d'exécution au script :
+
+```bash
+chmod +x supprimer_temporaires.sh
+```
+
+### 3. Planifiez l'exécution du script une fois par semaine avec `cron` :
+
+Ouvrez le fichier `crontab` pour l'utilisateur actuel :
+
+```bash
+crontab -e
+```
+
+Ajoutez une ligne pour planifier l'exécution du script une fois par semaine. Par exemple, pour exécuter le script tous les dimanches à minuit :
+
+```
+0 0 * * 0 /chemin/vers/votre/script/supprimer_temporaires.sh
+```
+
+### Remarques :
+
+- Assurez-vous que le chemin du script dans le `crontab` est correct.
+- Vous pouvez utiliser `crontab -l` pour vérifier que la tâche planifiée a été ajoutée correctement.
+- Assurez-vous que le script `supprimer_temporaires.sh` fonctionne comme prévu avant de le planifier dans `cron`.
+- Adaptez le moment de l'exécution selon vos besoins en modifiant les champs `Minute`, `Heure`, `Jour du mois` et `Jour de la semaine` dans la syntaxe `cron`.
