@@ -1,0 +1,62 @@
+Si vous utilisez un serveur Active Directory (AD) Windows pour l'authentification avec un serveur Postfix sur Ubuntu, vous n'avez pas besoin d'installer SASL et LDAP sur votre serveur Ubuntu. Au lieu de cela, vous pouvez utiliser le protocole Kerberos pour l'authentification avec Active Directory.
+
+Voici les étapes pour configurer Postfix avec l'authentification Active Directory en utilisant Kerberos :
+
+1. **Configurer Kerberos sur Ubuntu :**
+
+   Assurez-vous que le paquet `krb5-user` est installé sur votre serveur Ubuntu :
+
+   ```
+   sudo apt update
+   sudo apt install krb5-user
+   ```
+
+   Pendant l'installation, vous devrez fournir le nom du domaine Active Directory.
+
+2. **Configurer le fichier krb5.conf :**
+
+   Éditez le fichier `/etc/krb5.conf` pour configurer les paramètres Kerberos :
+
+   ```
+   sudo nano /etc/krb5.conf
+   ```
+
+   Voici un exemple de contenu :
+
+   ```
+   [libdefaults]
+       default_realm = YOUR.DOMAIN
+   ```
+
+   Remplacez `YOUR.DOMAIN` par le nom de votre domaine Active Directory.
+
+3. **Configurer Postfix pour utiliser Kerberos :**
+
+   Éditez le fichier de configuration principal de Postfix `main.cf` :
+
+   ```
+   sudo nano /etc/postfix/main.cf
+   ```
+
+   Ajoutez ou modifiez les lignes suivantes pour activer l'authentification Kerberos :
+
+   ```
+   smtpd_sasl_auth_enable = yes
+   smtpd_sasl_security_options = noanonymous
+   smtpd_sasl_type = cyrus
+   smtpd_sasl_path = smtpd
+   smtpd_sasl_tls_security_options = $smtpd_sasl_security_options
+   smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination
+   ```
+
+4. **Redémarrez Postfix :**
+
+   ```
+   sudo systemctl restart postfix
+   ```
+
+5. **Testez la configuration :**
+
+   Vous pouvez maintenant tester l'authentification en envoyant un email via votre serveur Postfix et en vous authentifiant avec un compte utilisateur Active Directory.
+
+Avec cette configuration, Postfix utilisera Kerberos pour l'authentification avec Active Directory sans nécessiter l'installation de SASL ou LDAP sur votre serveur Ubuntu.
