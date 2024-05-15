@@ -1,0 +1,67 @@
+Bien sûr, voici un guide détaillé avec toutes les commandes pour configurer l'authentification avec Active Directory sur un serveur Postfix en utilisant le service d'authentification LDAP :
+
+1. **Installer les outils LDAP :**
+
+   Assurez-vous que les outils LDAP sont installés sur votre serveur Ubuntu :
+
+   ```
+   sudo apt update
+   sudo apt install ldap-utils
+   ```
+
+2. **Configurer Postfix pour utiliser LDAP :**
+
+   Éditez le fichier de configuration principal de Postfix `main.cf` :
+
+   ```
+   sudo nano /etc/postfix/main.cf
+   ```
+
+   Ajoutez ou modifiez les lignes suivantes pour activer l'authentification LDAP :
+
+   ```
+   smtpd_sasl_auth_enable = yes
+   smtpd_sasl_type = cyrus
+   smtpd_sasl_path = smtpd
+   smtpd_sasl_security_options = noanonymous
+   smtpd_sasl_local_domain = $myhostname
+   smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination
+
+   # Configuration LDAP
+   smtpd_sasl_password_maps = ldap:/etc/postfix/ldap-users.cf
+   ```
+
+3. **Créer le fichier de configuration LDAP :**
+
+   Créez un fichier `/etc/postfix/ldap-users.cf` avec les informations de connexion LDAP :
+
+   ```
+   sudo nano /etc/postfix/ldap-users.cf
+   ```
+
+   Ajoutez-y les paramètres de connexion LDAP :
+
+   ```
+   server_host = your.ad.server
+   search_base = dc=example,dc=com
+   version = 3
+   bind = no
+   start_tls = yes
+   scope = sub
+   query_filter = (&(objectClass=user)(sAMAccountName=%u))
+   result_attribute = userPrincipalName
+   ```
+
+   Assurez-vous de remplacer `your.ad.server` et `dc=example,dc=com` par les valeurs appropriées pour votre environnement Active Directory.
+
+4. **Redémarrez Postfix :**
+
+   ```
+   sudo systemctl restart postfix
+   ```
+
+5. **Testez la configuration :**
+
+   Vous pouvez maintenant tester l'authentification en envoyant un email via votre serveur Postfix et en vous authentifiant avec un compte utilisateur Active Directory.
+
+Ces étapes devraient vous permettre de configurer l'authentification avec Active Directory sur votre serveur Postfix en utilisant le service d'authentification LDAP. Assurez-vous de suivre attentivement chaque étape et de remplacer les valeurs fictives par les valeurs spécifiques à votre environnement Active Directory.
