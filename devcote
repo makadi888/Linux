@@ -1,0 +1,68 @@
+
+
+1. **Installer Postfix** :
+   ```bash
+   sudo apt update
+   sudo apt install postfix
+   ```
+
+2. **Installer Devcot et SASL** :
+   ```bash
+   sudo apt install dovecot-core dovecot-imapd dovecot-lmtpd libsasl2-modules
+   ```
+
+3. **Configurer Devcot** :
+   - Éditez le fichier `/etc/dovecot/conf.d/10-auth.conf` :
+     ```bash
+     sudo nano /etc/dovecot/conf.d/10-auth.conf
+     ```
+   - Assurez-vous que le bloc `auth_mechanisms` inclut `plain` :
+     ```
+     auth_mechanisms = plain login
+     ```
+
+4. **Configurer SASL** :
+   - Éditez le fichier `/etc/postfix/sasl/smtpd.conf` :
+     ```bash
+     sudo nano /etc/postfix/sasl/smtpd.conf
+     ```
+   - Ajoutez les paramètres suivants :
+     ```
+     pwcheck_method: saslauthd
+     mech_list: plain login
+     ```
+
+5. **Configurer l'authentification AD** :
+   - Installez le paquet `libpam-ldapd` :
+     ```bash
+     sudo apt install libpam-ldapd
+     ```
+   - Pendant l'installation, configurez les paramètres LDAP pour se connecter à votre domaine AD.
+   - Assurez-vous que le service `nslcd` est en cours d'exécution :
+     ```bash
+     sudo systemctl start nslcd
+     sudo systemctl enable nslcd
+     ```
+
+6. **Configurer Postfix** :
+   - Éditez le fichier `/etc/postfix/main.cf` :
+     ```bash
+     sudo nano /etc/postfix/main.cf
+     ```
+   - Ajoutez ou modifiez les lignes suivantes :
+     ```
+     smtpd_sasl_auth_enable = yes
+     smtpd_sasl_path = smtpd
+     smtpd_sasl_type = dovecot
+     smtpd_sasl_security_options = noanonymous
+     smtpd_sasl_local_domain =
+     broken_sasl_auth_clients = yes
+     smtpd_sasl_authenticated_header = yes
+     smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination
+     ```
+
+7. **Redémarrez les services** :
+   ```bash
+   sudo systemctl restart postfix
+   sudo systemctl restart dovecot
+   ```
