@@ -1,0 +1,47 @@
+
+1. **Installer Postfix, Dovecot, SASL et Winbind** :
+   ```bash
+   sudo apt update
+   sudo apt install postfix dovecot-core dovecot-imapd dovecot-lmtpd libsasl2-modules winbind
+   ```
+
+2. **Configurer Postfix pour l'envoi via Dovecot** :
+   ```bash
+   sudo nano /etc/postfix/main.cf
+   ```
+   Ajoutez ou modifiez les lignes suivantes :
+   ```
+   smtpd_sasl_type = dovecot
+   smtpd_sasl_path = private/auth
+   smtpd_sasl_auth_enable = yes
+   smtpd_relay_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination
+   ```
+
+3. **Configurer Dovecot pour l'authentification Active Directory** :
+   - Éditez le fichier de configuration Dovecot :
+     ```bash
+     sudo nano /etc/dovecot/conf.d/10-auth.conf
+     ```
+   - Assurez-vous que `pam` est inclus dans les mécanismes d'authentification :
+     ```
+     auth_mechanisms = plain login pam
+     ```
+
+   - Éditez le fichier `/etc/pam.d/dovecot` :
+     ```bash
+     sudo nano /etc/pam.d/dovecot
+     ```
+   - Ajoutez les lignes suivantes :
+     ```
+     auth    required    pam_winbind.so
+     account required    pam_winbind.so
+     ```
+
+4. **Redémarrez les services Postfix, Dovecot et Winbind** :
+   ```bash
+   sudo systemctl restart postfix
+   sudo systemctl restart dovecot
+   sudo systemctl restart winbind
+   ```
+
+Ces commandes devraient configurer Postfix en tant que relais SMTP avec l'authentification Active Directory via Dovecot et SASL, et également configurer Dovecot pour utiliser l'authentification PAM avec Active Directory. Assurez-vous de remplacer les configurations spécifiques telles que les informations de domaine Active Directory et les paramètres de serveur SMTP relais dans les étapes de configuration appropriées.
