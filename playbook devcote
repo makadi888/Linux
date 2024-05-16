@@ -1,0 +1,69 @@
+Voici un exemple de playbook Ansible pour installer Postfix avec une configuration d'authentification avec Active Directory (AD) en utilisant Dovecot et SASL sur Ubuntu :
+
+```yaml
+---
+- name: Install Postfix with Active Directory authentication using Dovecot and SASL
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - postfix
+        - dovecot-core
+        - dovecot-imapd
+        - dovecot-lmtpd
+        - libsasl2-modules
+        - winbind
+
+    - name: Configure Postfix main.cf
+      template:
+        src: postfix/main.cf.j2
+        dest: /etc/postfix/main.cf
+      notify: restart postfix
+
+    - name: Configure Dovecot auth.conf
+      lineinfile:
+        path: /etc/dovecot/conf.d/10-auth.conf
+        line: "{{ item }}"
+      loop:
+        - "auth_mechanisms = plain login pam"
+      notify: restart dovecot
+
+    - name: Configure Dovecot PAM for Active Directory
+      lineinfile:
+        path: /etc/pam.d/dovecot
+        line: "{{ item }}"
+      loop:
+        - "auth required pam_winbind.so"
+        - "account required pam_winbind.so"
+
+  handlers:
+    - name: restart postfix
+      service:
+        name: postfix
+        state: restarted
+
+    - name: restart dovecot
+      service:
+        name: dovecot
+        state: restarted
+```
+
+Créez un fichier nommé `main.cf.j2` dans un répertoire nommé `postfix` dans le même répertoire que votre playbook Ansible. Voici un exemple de contenu pour `main.cf.j2` :
+
+```ini
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+smtpd_relay_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination
+```
+
+Exécutez ce playbook Ansible avec la commande :
+
+```bash
+ansible-playbook -i inventory.yml postfix_ad.yml
+```
+
