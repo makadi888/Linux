@@ -1,0 +1,43 @@
+
+1. **Installer les paquets nécessaires** :
+```bash
+sudo apt update
+sudo apt install postfix cyrus-sasl-plain winbind
+```
+
+2. **Configurer Postfix** :
+```bash
+sudo nano /etc/postfix/main.cf
+```
+Assurez-vous que les paramètres suivants sont configurés ou ajoutés :
+```
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_path = smtpd
+smtpd_sasl_type = cyrus
+smtpd_sasl_security_options = noanonymous
+broken_sasl_auth_clients = yes
+smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination
+```
+
+3. **Configurer Cyrus SASL pour Active Directory** :
+```bash
+sudo nano /etc/saslauthd.conf
+```
+Assurez-vous que les paramètres suivants sont configurés ou ajoutés :
+```
+ldap_servers: ldap://<AD_SERVER>
+ldap_search_base: <LDAP_SEARCH_BASE>
+ldap_bind_dn: <BIND_DN>
+ldap_bind_pw: <BIND_PASSWORD>
+ldap_timeout: 10
+ldap_tls_cacert_file: /etc/ssl/certs/ca-certificates.crt
+ldap_version: 3
+```
+
+4. **Redémarrer les services** :
+```bash
+sudo systemctl restart postfix
+sudo systemctl restart saslauthd
+```
+
+Cela devrait configurer votre serveur SMTP Postfix pour utiliser Cyrus SASL avec une authentification Active Directory. Assurez-vous de remplacer `<AD_SERVER>`, `<LDAP_SEARCH_BASE>`, `<BIND_DN>`, et `<BIND_PASSWORD>` avec les valeurs appropriées de votre configuration Active Directory.
