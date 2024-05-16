@@ -1,0 +1,45 @@
+
+
+1. **Installer les paquets nécessaires** :
+```bash
+sudo apt update
+sudo apt install postfix dovecot-core dovecot-imapd dovecot-lmtpd libsasl2-modules winbind
+```
+
+2. **Configurer Postfix** :
+```bash
+sudo nano /etc/postfix/main.cf
+```
+Ajoutez ou modifiez les lignes suivantes :
+```
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+smtpd_relay_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination
+```
+
+3. **Configurer Dovecot** :
+```bash
+sudo nano /etc/dovecot/conf.d/10-auth.conf
+```
+Assurez-vous que le bloc `auth` est configuré pour utiliser PAM :
+```
+auth_mechanisms = plain login pam
+```
+
+4. **Configurer le service PAM pour Dovecot** :
+```bash
+sudo nano /etc/pam.d/dovecot
+```
+Ajoutez les lignes suivantes :
+```
+auth    required    pam_winbind.so
+account required    pam_winbind.so
+```
+
+5. **Redémarrez les services** :
+```bash
+sudo systemctl restart postfix
+sudo systemctl restart dovecot
+```
+
