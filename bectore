@@ -1,0 +1,106 @@
+Pour corriger la vulnérabilité (CVE-2024-3094) dans les versions 5.6.0 et 5.6.1 de XZ Utils, vous devez rétrograder à une version non affectée, telle que 5.4.x. Voici les commandes pour effectuer cette opération sur différentes distributions Linux :
+
+### Fedora
+
+1. Vérifiez la version installée :
+   ```sh
+   rpm -q xz
+   ```
+
+2. Si nécessaire, désinstallez la version vulnérable :
+   ```sh
+   sudo dnf remove xz
+   ```
+
+3. Installez une version non affectée :
+   ```sh
+   sudo dnf install xz-5.4.x
+   ```
+
+### Debian/Ubuntu
+
+1. Vérifiez la version installée :
+   ```sh
+   dpkg -l | grep xz-utils
+   ```
+
+2. Si nécessaire, désinstallez la version vulnérable :
+   ```sh
+   sudo apt-get remove --purge xz-utils
+   ```
+
+3. Téléchargez et installez une version non affectée (remplacez `[version]` et `[architecture]` par les valeurs appropriées) :
+   ```sh
+   wget http://ftp.debian.org/debian/pool/main/x/xz-utils/xz-utils_[version]_[architecture].deb
+   sudo dpkg -i xz-utils_[version]_[architecture].deb
+   ```
+
+### Kali Linux
+
+1. Vérifiez la version installée :
+   ```sh
+   dpkg -l | grep xz-utils
+   ```
+
+2. Si nécessaire, désinstallez la version vulnérable :
+   ```sh
+   sudo apt-get remove --purge xz-utils
+   ```
+
+3. Installez une version non affectée :
+   ```sh
+   sudo apt-get install xz-utils=5.4.x
+   ```
+
+### OpenSUSE Tumbleweed
+
+1. Vérifiez la version installée :
+   ```sh
+   rpm -q xz
+   ```
+
+2. Si nécessaire, désinstallez la version vulnérable :
+   ```sh
+   sudo zypper remove xz
+   ```
+
+3. Installez une version non affectée :
+   ```sh
+   sudo zypper install xz=5.4.x
+   ```
+
+### Alpine Linux
+
+1. Vérifiez la version installée :
+   ```sh
+   apk info xz
+   ```
+
+2. Si nécessaire, désinstallez la version vulnérable :
+   ```sh
+   sudo apk del xz
+   ```
+
+3. Installez une version non affectée :
+   ```sh
+   sudo apk add xz=5.4.x-r0
+   ```
+
+### Surveillance et Vérification
+
+Après avoir rétrogradé, il est crucial de vérifier l'absence de la version vulnérable et de surveiller toute activité suspecte :
+
+1. **Vérifiez la version installée après la mise à jour :**
+   ```sh
+   xz --version
+   ```
+
+2. **Surveillez les logs pour détecter toute activité inhabituelle :**
+   ```sh
+   sudo tail -f /var/log/syslog
+   sudo tail -f /var/log/auth.log
+   ```
+
+3. **Effectuez un audit de sécurité sur vos systèmes pour vous assurer qu'aucune compromission n'a eu lieu.**
+
+En suivant ces étapes, vous devriez être en mesure de corriger la vulnérabilité et de sécuriser vos systèmes.
