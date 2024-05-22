@@ -1,0 +1,128 @@
+Pour copier directement un fichier de configuration `ntp.conf` vers `/etc/ntp.conf` à partir de votre machine locale dans un playbook Ansible, vous pouvez utiliser le module `copy` d'Ansible. Voici un exemple de comment structurer le playbook pour réaliser cette tâche :
+
+### Structure du Playbook Ansible
+
+1. **Créer le fichier d'inventaire** : 
+
+   **inventory.ini** :
+   ```ini
+   [ntp_servers]
+   your_ntp_server_ip_or_hostname
+   ```
+
+2. **Créer le fichier de configuration NTP** : 
+
+   **ntp.conf** :
+   ```conf
+   driftfile /var/lib/ntp/ntp.drift
+
+   # Enable this if you want statistics to be logged.
+   statsdir /var/log/ntpstats/
+
+   statistics loopstats peerstats clockstats
+   filegen loopstats file loopstats type day enable
+   filegen peerstats file peerstats type day enable
+   filegen clockstats file clockstats type day enable
+
+   # You do need to talk to an NTP server or two (or three).
+   server 0.fr.pool.ntp.org iburst
+   server 1.fr.pool.ntp.org iburst
+   server 2.fr.pool.ntp.org iburst
+   server 3.fr.pool.ntp.org iburst
+
+   # Additional sources in France
+   server ntp.univ-lyon1.fr iburst
+   server ntp.obspm.fr iburst
+   server ntp1.jussieu.fr iburst
+   server ntp2.jussieu.fr iburst
+   server ntp.unice.fr iburst
+   server ntp.univ-rouen.fr iburst
+   server ntp.loria.fr iburst
+
+   # Additional sources from Europe
+   server 0.europe.pool.ntp.org iburst
+   server 1.europe.pool.ntp.org iburst
+   server 2.europe.pool.ntp.org iburst
+   server 3.europe.pool.ntp.org iburst
+
+   # Access control configuration; see /usr/share/doc/ntp-doc/html/accopt.html for details.
+   # Restrict access to localhost and your network
+   restrict 127.0.0.1
+   restrict ::1
+   restrict default kod nomodify notrap nopeer noquery
+   restrict -6 default kod nomodify notrap nopeer noquery
+
+   # Allow NTP clients from local network
+   restrict 192.168.0.0 mask 255.255.255.0 nomodify notrap
+
+   # Local clock
+   server 127.127.1.0
+   fudge 127.127.1.0 stratum 10
+   ```
+
+3. **Créer le playbook Ansible** :
+
+   **ntp_playbook.yml** :
+   ```yaml
+   ---
+   - name: Install and configure NTP server
+     hosts: ntp_servers
+     become: yes
+     tasks:
+       - name: Ensure the package list is updated
+         apt:
+           update_cache: yes
+
+       - name: Install NTP package
+         apt:
+           name: ntp
+           state: present
+
+       - name: Copy NTP configuration file
+         copy:
+           src: ./ntp.conf
+           dest: /etc/ntp.conf
+           owner: root
+           group: root
+           mode: '0644'
+
+       - name: Ensure NTP service is enabled and started
+         systemd:
+           name: ntp
+           enabled: yes
+           state: started
+   ```
+
+### Instructions
+
+1. **Créer l'inventaire** :
+   Sauvegardez le fichier `inventory.ini` avec les adresses IP ou les noms d'hôtes de vos serveurs NTP.
+
+2. **Créer le fichier de configuration NTP** :
+   Sauvegardez le fichier `ntp.conf` avec le contenu de la configuration souhaitée.
+
+3. **Créer le playbook** :
+   Sauvegardez le fichier `ntp_playbook.yml`.
+
+4. **Exécuter le playbook** :
+   Sur le serveur de contrôle Ansible, exécutez la commande suivante pour appliquer le playbook. Assurez-vous que le fichier `ntp.conf` est dans le même répertoire que votre playbook ou spécifiez le chemin correct dans le champ `src` de la tâche `copy`.
+
+   ```bash
+   ansible-playbook -i inventory.ini ntp_playbook.yml
+   ```
+
+### Vérification
+
+Après avoir exécuté le playbook, vous pouvez vérifier l'état du service NTP sur les hôtes en utilisant la commande suivante :
+
+```bash
+sudo systemctl status ntp
+```
+
+Et vous pouvez vérifier la synchronisation NTP en utilisant :
+
+```bash
+ntpq -p
+```
+
+Cela permettra de s'assurer que le fichier de configuration NTP a été correctement copié et que le service NTP est correctement configuré et en cours d'exécution avec les sources fiables spécifiées.
