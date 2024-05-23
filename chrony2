@@ -1,0 +1,122 @@
+Si vous avez installé un serveur NTP sur Ubuntu et que vous voyez des résultats avec `ntpq -p` mais que `timedatectl` affiche toujours "NTP: n/a" et que la commande `sudo timedatectl set-ntp true` ne fonctionne pas, il peut y avoir un conflit entre les services NTP sur votre système. Voici les étapes pour résoudre ce problème :
+
+### Étapes pour diagnostiquer et résoudre le problème :
+
+1. **Vérifiez l'état de `ntpd` :**
+   Assurez-vous que `ntpd` (ou `chronyd` si vous utilisez `chrony`) est actif.
+   ```bash
+   sudo systemctl status ntp
+   ```
+
+2. **Désactivez `systemd-timesyncd` :**
+   Si vous utilisez `ntpd`, vous devez désactiver `systemd-timesyncd` pour éviter les conflits.
+   ```bash
+   sudo systemctl stop systemd-timesyncd
+   sudo systemctl disable systemd-timesyncd
+   ```
+
+3. **Assurez-vous que `ntpd` est configuré correctement :**
+   Modifiez le fichier `/etc/ntp.conf` pour vous assurer qu'il pointe vers des serveurs NTP valides. Si nécessaire, ajoutez ou modifiez les serveurs NTP :
+   ```bash
+   sudo nano /etc/ntp.conf
+   ```
+   Ajoutez les serveurs NTP, par exemple :
+   ```conf
+   server 0.fr.pool.ntp.org iburst
+   server 1.fr.pool.ntp.org iburst
+   server 2.fr.pool.ntp.org iburst
+   server 3.fr.pool.ntp.org iburst
+   ```
+
+4. **Redémarrez le service `ntpd` :**
+   Après avoir modifié le fichier de configuration, redémarrez le service `ntpd` :
+   ```bash
+   sudo systemctl restart ntp
+   ```
+
+5. **Vérifiez l'état de la synchronisation NTP avec `ntpq` :**
+   Utilisez `ntpq` pour vérifier que votre serveur est correctement synchronisé :
+   ```bash
+   ntpq -p
+   ```
+
+6. **Vérifiez l'état avec `timedatectl` :**
+   Après avoir configuré et redémarré `ntpd`, vérifiez à nouveau l'état avec `timedatectl` :
+   ```bash
+   timedatectl status
+   ```
+
+### Utilisation de `chrony` comme alternative :
+
+Si les étapes ci-dessus ne résolvent pas le problème, vous pouvez essayer d'utiliser `chrony` comme alternative à `ntpd`, car `chrony` est souvent mieux intégré avec `systemd`.
+
+1. **Installer `chrony` :**
+   ```bash
+   sudo apt-get install chrony
+   ```
+
+2. **Désactivez `ntpd` :**
+   Arrêtez et désactivez `ntpd` pour éviter les conflits.
+   ```bash
+   sudo systemctl stop ntp
+   sudo systemctl disable ntp
+   ```
+
+3. **Configurer `chrony` pour utiliser des serveurs NTP appropriés :**
+   Modifiez le fichier de configuration `/etc/chrony/chrony.conf` :
+   ```bash
+   sudo nano /etc/chrony/chrony.conf
+   ```
+   Ajoutez les serveurs NTP, par exemple :
+   ```conf
+   server 0.fr.pool.ntp.org iburst
+   server 1.fr.pool.ntp.org iburst
+   server 2.fr.pool.ntp.org iburst
+   server 3.fr.pool.ntp.org iburst
+   ```
+
+4. **Démarrez et activez `chrony` :**
+   ```bash
+   sudo systemctl start chrony
+   sudo systemctl enable chrony
+   ```
+
+5. **Vérifiez l'état de la synchronisation NTP avec `chrony` :**
+   Utilisez `chronyc` pour vérifier la synchronisation :
+   ```bash
+   chronyc tracking
+   ```
+
+6. **Vérifiez l'état avec `timedatectl` :**
+   ```bash
+   timedatectl status
+   ```
+
+### Résumé des commandes :
+
+```bash
+sudo systemctl stop systemd-timesyncd
+sudo systemctl disable systemd-timesyncd
+
+sudo systemctl restart ntp
+sudo systemctl status ntp
+
+ntpq -p
+timedatectl status
+```
+
+Ou, si vous utilisez `chrony` :
+
+```bash
+sudo apt-get install chrony
+sudo systemctl stop ntp
+sudo systemctl disable ntp
+
+sudo systemctl start chrony
+sudo systemctl enable chrony
+
+chronyc tracking
+timedatectl status
+```
+
+En suivant ces étapes, vous devriez être en mesure de résoudre les problèmes de synchronisation NTP sur votre serveur Ubuntu et voir les informations correctes dans la sortie de `timedatectl`.
