@@ -1,0 +1,14 @@
+sudo apt-get update
+sudo apt-get install chrony
+
+sudo nano /etc/chrony/chrony.conf
+# Modifier et ajouter les serveurs NTP comme nécessaire
+
+sudo systemctl start chrony
+sudo systemctl enable chrony
+
+chronyc tracking
+timedatectl status
+
+sudo systemctl stop systemd-timesyncd
+sudo systemctl disable systemd-timesyncd
