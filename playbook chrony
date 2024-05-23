@@ -1,0 +1,25 @@
+---
+- name: Configuration de Chrony sur les serveurs clients
+  hosts: serveurs_clients
+  become: yes
+
+  tasks:
+    - name: Installer Chrony
+      apt:
+        name: chrony
+        state: present
+
+    - name: Configuration de Chrony
+      blockinfile:
+        path: /etc/chrony/chrony.conf
+        block: |
+          # Configuration pour synchroniser avec le serveur NTP
+          server {{ ntp_server }} iburst
+
+      notify: Restart chrony
+
+  handlers:
+    - name: Restart chrony
+      service:
+        name: chrony
+        state: restarted
