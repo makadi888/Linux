@@ -1,0 +1,91 @@
+Pour configurer `chrony` sur un serveur en France, vous pouvez suivre les étapes ci-dessous. Ces étapes incluent l'installation de `chrony`, la configuration pour utiliser des serveurs de temps français, et la vérification de la synchronisation.
+
+### Étapes d'installation et de configuration de `chrony` :
+
+1. **Installer `chrony` :**
+   ```bash
+   sudo apt-get install chrony
+   ```
+
+2. **Configurer `chrony` pour utiliser des serveurs de temps français :**
+   Modifiez le fichier de configuration `/etc/chrony/chrony.conf` pour inclure des serveurs NTP français. Vous pouvez utiliser les serveurs du pool NTP français (par exemple, `fr.pool.ntp.org`).
+
+   Ouvrez le fichier de configuration :
+   ```bash
+   sudo nano /etc/chrony/chrony.conf
+   ```
+
+   Ajoutez ou modifiez les lignes suivantes pour inclure les serveurs français :
+   ```bash
+   # Use servers from the NTP Pool Project in France.
+   server 0.fr.pool.ntp.org iburst
+   server 1.fr.pool.ntp.org iburst
+   server 2.fr.pool.ntp.org iburst
+   server 3.fr.pool.ntp.org iburst
+   ```
+
+3. **Redémarrer le service `chrony` :**
+   Après avoir modifié le fichier de configuration, redémarrez le service `chrony` pour appliquer les modifications :
+   ```bash
+   sudo systemctl restart chrony
+   ```
+
+4. **Vérifier le statut de `chrony` :**
+   Utilisez la commande suivante pour vérifier que `chrony` fonctionne correctement et qu'il est synchronisé avec les serveurs NTP :
+   ```bash
+   chronyc tracking
+   ```
+
+   Vous devriez voir une sortie indiquant l'état de la synchronisation, l'offset, et d'autres détails pertinents.
+
+5. **Vérifier l'état de `timedatectl` :**
+   Vérifiez que `timedatectl` montre maintenant que NTP est actif et en cours d'exécution :
+   ```bash
+   timedatectl status
+   ```
+
+### Exemple de configuration de `/etc/chrony/chrony.conf` :
+
+Voici un exemple complet de fichier de configuration `/etc/chrony/chrony.conf` adapté pour la France :
+
+```conf
+# Welcome to the chrony configuration file. See chrony.conf(5) for more details.
+
+# Use servers from the NTP Pool Project. See http://www.pool.ntp.org/.
+# Please consider joining the pool (http://www.pool.ntp.org/join.html).
+server 0.fr.pool.ntp.org iburst
+server 1.fr.pool.ntp.org iburst
+server 2.fr.pool.ntp.org iburst
+server 3.fr.pool.ntp.org iburst
+
+# Record the rate at which the system clock gains/losses time.
+driftfile /var/lib/chrony/chrony.drift
+
+# Enable kernel RTC synchronization.
+rtcsync
+
+# Allow the system clock to be stepped in the first three updates if its offset
+# is larger than 1 second.
+makestep 1 3
+
+# Enable hardware timestamping on all interfaces that support it.
+#hwtimestamp *
+
+# Increase the minimum number of selectable sources required to adjust
+# the system clock.
+#minsources 2
+
+# Allow NTP client access from local network.
+#allow 192.168/16
+
+# Serve time even if not synchronized to any NTP server.
+local stratum 10
+
+# Specify directory for log files.
+logdir /var/log/chrony
+
+# Select which information is logged.
+#log measurements statistics tracking
+```
+
+En suivant ces étapes, vous devriez être en mesure de configurer `chrony` pour synchroniser l'heure de votre serveur avec des serveurs NTP situés en France, et résoudre tout problème lié à `timedatectl` n'affichant pas correctement les informations NTP.
