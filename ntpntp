@@ -1,0 +1,99 @@
+Si le client Chrony montre une ligne avec `192.168.1.1` et des valeurs de `Stratum`, `Poll`, et `Reach` égales à 0, cela signifie que le client n'est pas capable de communiquer correctement avec le serveur Chrony. Voici quelques étapes supplémentaires pour résoudre ce problème :
+
+### 1. Vérifier la Configuration du Serveur Chrony
+
+Assurez-vous que le serveur Chrony est bien configuré pour permettre les connexions des clients. Éditez le fichier de configuration `/etc/chrony/chrony.conf` sur le serveur :
+
+```sh
+sudo nano /etc/chrony/chrony.conf
+```
+
+Assurez-vous que la ligne suivante permet aux clients de se connecter (remplacez la plage d'adresses IP si nécessaire) :
+
+```sh
+allow 192.168.1.0/24
+```
+
+### 2. Redémarrer le Serveur Chrony
+
+Redémarrez le service Chrony pour appliquer les modifications :
+
+```sh
+sudo systemctl restart chrony
+```
+
+### 3. Vérifier la Connectivité Réseau
+
+Assurez-vous que le client peut atteindre le serveur Chrony :
+
+```sh
+ping 192.168.1.1  # Remplacez par l'adresse IP de votre serveur Chrony
+```
+
+### 4. Vérifier le Pare-feu
+
+Assurez-vous que les ports nécessaires sont ouverts sur le serveur (par défaut, UDP port 123) :
+
+```sh
+sudo ufw allow 123/udp
+sudo ufw reload
+```
+
+### 5. Vérifier la Configuration du Client Chrony
+
+Sur le client, vérifiez le fichier de configuration `/etc/chrony/chrony.conf` :
+
+```sh
+sudo nano /etc/chrony/chrony.conf
+```
+
+Ajoutez ou modifiez la ligne suivante :
+
+```sh
+server 192.168.1.1 iburst  # Remplacez par l'adresse IP de votre serveur Chrony
+```
+
+### 6. Redémarrer le Client Chrony
+
+Redémarrez le service Chrony sur le client pour appliquer les modifications :
+
+```sh
+sudo systemctl restart chrony
+```
+
+### 7. Vérifier le Statut et les Sources
+
+Après avoir redémarré le service, vérifiez le statut et les sources sur le client :
+
+```sh
+chronyc tracking
+chronyc sources
+```
+
+### 8. Vérifier les Logs
+
+Si le problème persiste, vérifiez les logs sur le client pour des messages d'erreur ou d'avertissement :
+
+```sh
+sudo journalctl -u chrony
+```
+
+### Exemple de Résultat Attendu
+
+Une sortie correcte de `chronyc sources` devrait ressembler à ceci :
+
+```
+210 Number of sources = 1
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^* 192.168.1.1                   2   6    17    43    +11us[  +55us] +/-  138ms
+```
+
+Les champs `Stratum`, `Poll`, et `Reach` devraient avoir des valeurs non nulles, et le symbole `^*` indique que le client est synchronisé avec le serveur.
+
+### Autres Points à Vérifier
+
+- **NTP Synchronisation du Serveur**: Assurez-vous que le serveur lui-même est synchronisé avec ses sources NTP. Utilisez `chronyc tracking` sur le serveur pour vérifier cela.
+- **Problèmes de Réseau**: Assurez-vous qu'il n'y a pas de problèmes de réseau ou de latence qui pourraient empêcher la communication entre le client et le serveur.
+
+En suivant ces étapes, vous devriez être en mesure de diagnostiquer et de corriger le problème de synchronisation entre votre client et votre serveur Chrony.
