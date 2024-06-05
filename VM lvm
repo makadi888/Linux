@@ -1,0 +1,94 @@
+Pour créer un nouveau système de fichiers LVM sur une machine CentOS 7 contenant déjà une base de données, voici les étapes détaillées :
+
+### Étape 1 : Installation des outils LVM
+Assurez-vous que les outils LVM sont installés sur votre machine.
+
+```bash
+sudo yum install lvm2
+```
+
+### Étape 2 : Préparer le disque ou la partition
+Identifiez le disque ou la partition que vous souhaitez utiliser pour LVM. Par exemple, `/dev/sdb`.
+
+### Étape 3 : Créer des partitions LVM
+Si votre disque n'a pas encore de partitions, créez-en une pour LVM.
+
+```bash
+sudo fdisk /dev/sdb
+```
+
+Créez une nouvelle partition primaire et changez le type à `8e` (Linux LVM).
+
+### Étape 4 : Initialiser le disque ou la partition pour LVM
+Initialisez le disque ou la partition en tant que volume physique LVM.
+
+```bash
+sudo pvcreate /dev/sdb1
+```
+
+### Étape 5 : Créer un groupe de volumes
+Créez un groupe de volumes avec le volume physique.
+
+```bash
+sudo vgcreate mon_vg /dev/sdb1
+```
+
+### Étape 6 : Créer un volume logique
+Créez un volume logique dans le groupe de volumes. Par exemple, pour créer un volume de 10 Go nommé `mon_lv` :
+
+```bash
+sudo lvcreate -L 10G -n mon_lv mon_vg
+```
+
+### Étape 7 : Formater le volume logique
+Formatez le volume logique avec le système de fichiers de votre choix. Par exemple, pour ext4 :
+
+```bash
+sudo mkfs.ext4 /dev/mon_vg/mon_lv
+```
+
+### Étape 8 : Monter le volume logique
+Créez un point de montage et montez le volume logique.
+
+```bash
+sudo mkdir /mnt/mon_lv
+sudo mount /dev/mon_vg/mon_lv /mnt/mon_lv
+```
+
+### Étape 9 : Mettre à jour `/etc/fstab` pour montage automatique
+Ajoutez une entrée dans le fichier `/etc/fstab` pour que le volume logique soit monté automatiquement au démarrage.
+
+```bash
+echo '/dev/mon_vg/mon_lv /mnt/mon_lv ext4 defaults 0 0' | sudo tee -a /etc/fstab
+```
+
+### Étape 10 : Migrer la base de données
+Arrêtez le service de la base de données pour éviter toute corruption des données.
+
+```bash
+sudo systemctl stop nom_du_service_db
+```
+
+Copiez les données de la base de données vers le nouveau système de fichiers LVM.
+
+```bash
+sudo rsync -av /chemin/actuel/base_de_donnees/ /mnt/mon_lv/
+```
+
+### Étape 11 : Reconfigurer le service de la base de données
+Modifiez la configuration de la base de données pour pointer vers le nouveau chemin de stockage sur le système de fichiers LVM.
+
+### Étape 12 : Démarrer le service de la base de données
+Redémarrez le service de la base de données.
+
+```bash
+sudo systemctl start nom_du_service_db
+```
+
+### Vérification
+Vérifiez que la base de données fonctionne correctement et que les données sont accessibles.
+
+### Notes supplémentaires
+- Assurez-vous d'avoir une sauvegarde de vos données avant de commencer cette procédure.
+- Adaptez les commandes et chemins en fonction de votre configuration spécifique.
+- Testez chaque étape dans un environnement de test si possible avant de l'exécuter sur un serveur de production.
