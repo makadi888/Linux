@@ -1,0 +1,104 @@
+Lorsque vous configurez Chrony comme client sur une machine virtuelle pour synchroniser avec un serveur NTP, il est normal de voir un point d'interrogation ("?") devant le nom du serveur dans la sortie de `chronyc sources` si la synchronisation n'a pas encore été établie. Cela peut être dû à plusieurs raisons, telles que des problèmes de réseau, une mauvaise configuration, ou le temps nécessaire pour établir la synchronisation.
+
+Voici les étapes à suivre pour diagnostiquer et résoudre ce problème :
+
+### 1. Vérifier la connectivité réseau
+
+Assurez-vous que le client peut atteindre le serveur NTP. Utilisez `ping` pour vérifier la connectivité :
+
+```bash
+ping <adresse_ip_du_serveur_ntp>
+```
+
+### 2. Vérifier les configurations de chrony.conf
+
+Vérifiez que le fichier de configuration de Chrony sur le client contient bien l'adresse du serveur NTP. Par exemple, dans `/etc/chrony/chrony.conf`, vous devez avoir une ligne similaire à celle-ci :
+
+```bash
+server <adresse_ip_du_serveur_ntp> iburst
+```
+
+### 3. Redémarrer le service Chrony
+
+Après avoir modifié la configuration, redémarrez le service Chrony :
+
+```bash
+sudo systemctl restart chrony
+```
+
+### 4. Vérifier l'état de Chrony
+
+Utilisez la commande suivante pour vérifier l'état de Chrony :
+
+```bash
+sudo systemctl status chrony
+```
+
+### 5. Vérifier la source de Chrony
+
+Utilisez `chronyc sources` pour vérifier les sources NTP :
+
+```bash
+chronyc sources
+```
+
+Vous devriez voir une sortie similaire à celle-ci :
+
+```
+  210 Number of sources = 1
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^? <adresse_ip_du_serveur_ntp>  3   6     377   34    +15.2ms[+15.2ms] +/-  54ms
+```
+
+Le `^?` indique que le serveur est visible, mais que la synchronisation n'est pas encore établie.
+
+### 6. Vérifier le suivi de Chrony
+
+Utilisez `chronyc tracking` pour vérifier l'état de la synchronisation :
+
+```bash
+chronyc tracking
+```
+
+### 7. Vérifier les logs de Chrony
+
+Consultez les logs pour des erreurs potentielles :
+
+```bash
+sudo journalctl -u chrony
+```
+
+### Commandes de diagnostic supplémentaires
+
+- Pour forcer une synchronisation immédiate :
+
+```bash
+sudo chronyc makestep
+```
+
+- Pour obtenir des informations détaillées sur les sources NTP :
+
+```bash
+chronyc sourcestats
+```
+
+### Exemple de fichier de configuration
+
+Voici un exemple de fichier `/etc/chrony/chrony.conf` pour un client :
+
+```bash
+# Serveur NTP
+server <adresse_ip_du_serveur_ntp> iburst
+
+# Options de base
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+
+# Options supplémentaires
+allow all
+logdir /var/log/chrony
+```
+
+En suivant ces étapes et en utilisant ces commandes, vous devriez être en mesure de diagnostiquer et de résoudre les problèmes de synchronisation entre votre client Chrony et le serveur NTP.
