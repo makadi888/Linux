@@ -1,0 +1,91 @@
+Pour vérifier et résoudre les problèmes liés à votre compte utilisateur sur une machine CentOS lors d'une tentative de connexion SSH, suivez ces étapes :
+
+### 1. Vérification de l'existence du compte utilisateur
+
+- Assurez-vous que le compte utilisateur existe sur la machine :
+  ```bash
+  cat /etc/passwd | grep <nom_utilisateur>
+  ```
+  Si votre utilisateur n'apparaît pas dans la liste, il n'existe pas sur la machine.
+
+### 2. Vérification de l'état du compte
+
+- **Vérifiez si le compte est verrouillé :**
+  ```bash
+  sudo passwd -S <nom_utilisateur>
+  ```
+  La sortie doit indiquer "PS" (Password Set) si le compte est actif. Si c'est "LK" (Locked), le compte est verrouillé.
+
+  Pour déverrouiller le compte :
+  ```bash
+  sudo passwd -u <nom_utilisateur>
+  ```
+
+### 3. Vérification des permissions du compte
+
+- **Assurez-vous que le compte a les permissions nécessaires pour se connecter via SSH :**
+  - Vérifiez si le compte fait partie des groupes autorisés à utiliser SSH. Si des restrictions sont définies dans `/etc/ssh/sshd_config` pour `AllowUsers` ou `AllowGroups`, assurez-vous que votre utilisateur est inclus dans ces listes.
+
+### 4. Vérification du shell de l'utilisateur
+
+- **Assurez-vous que l'utilisateur a un shell valide configuré :**
+  ```bash
+  cat /etc/passwd | grep <nom_utilisateur>
+  ```
+  La sortie doit inclure une ligne similaire à : `<nom_utilisateur>:x:<uid>:<gid>:<description>:/home/<nom_utilisateur>:/bin/bash`.
+
+  Si le shell est défini sur `/sbin/nologin` ou `/bin/false`, cela empêche les connexions SSH. Changez le shell en utilisant :
+  ```bash
+  sudo chsh -s /bin/bash <nom_utilisateur>
+  ```
+
+### 5. Vérification des permissions sur le répertoire home
+
+- **Assurez-vous que les permissions du répertoire home sont correctes :**
+  ```bash
+  ls -ld /home/<nom_utilisateur>
+  ```
+  Les permissions devraient généralement être `drwx------` pour l'utilisateur et son groupe.
+
+### 6. Vérification des restrictions PAM (Pluggable Authentication Modules)
+
+- **Vérifiez si des restrictions PAM empêchent l'utilisateur de se connecter :**
+  - Consultez `/etc/security/access.conf` et `/etc/pam.d/sshd` pour des règles qui pourraient restreindre l'accès.
+  - Recherchez des lignes contenant `account` ou `auth`, qui pourraient empêcher la connexion de l'utilisateur.
+
+### 7. Vérification de l'expiration du mot de passe
+
+- **Assurez-vous que le mot de passe de l'utilisateur n'a pas expiré :**
+  ```bash
+  sudo chage -l <nom_utilisateur>
+  ```
+  Vérifiez les champs `Password expires` et `Account expires`. Si le mot de passe ou le compte est expiré, vous pouvez le réinitialiser :
+  ```bash
+  sudo passwd <nom_utilisateur>
+  ```
+
+### 8. Vérification des quotas
+
+- **Vérifiez que l'utilisateur n'a pas dépassé les quotas de disque :**
+  ```bash
+  sudo repquota -a | grep <nom_utilisateur>
+  ```
+  Si les quotas sont dépassés, vous devez les augmenter ou libérer de l'espace.
+
+### 9. Vérification de l'accès réseau
+
+- **Assurez-vous que l'utilisateur n'est pas restreint par des règles réseau :**
+  - Consultez `/etc/hosts.allow` et `/etc/hosts.deny` pour des règles qui pourraient affecter l'accès SSH.
+
+### 10. Réinitialisation du mot de passe
+
+- **Si vous avez toujours des problèmes, essayez de réinitialiser le mot de passe de l'utilisateur :**
+  ```bash
+  sudo passwd <nom_utilisateur>
+  ```
+
+### 11. Vérification des configurations spécifiques à l'utilisateur SSH
+
+- **Si vous avez configuré des options spécifiques pour l'utilisateur dans le fichier `~/.ssh/config`, vérifiez que ces configurations sont correctes.**
+
+En suivant ces étapes, vous devriez pouvoir diagnostiquer et résoudre les problèmes liés à votre compte utilisateur lors de la connexion SSH sur une machine CentOS. Si le problème persiste, n'hésitez pas à fournir plus de détails pour une assistance supplémentaire.
