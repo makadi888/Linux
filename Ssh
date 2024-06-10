@@ -1,0 +1,94 @@
+Pour résoudre le problème de connexion SSH "Access Denied" sur une machine CentOS, voici un guide détaillé avec les commandes à vérifier et à exécuter :
+
+### 1. Vérifier les informations de connexion de base
+
+- **Vérifiez l'adresse IP ou le nom de domaine** de la machine cible.
+- **Assurez-vous que le port SSH (par défaut 22)** est accessible. Utilisez `telnet` ou `nc` pour vérifier cela :
+  ```bash
+  telnet <ip_ou_nom_domaine> 22
+  # ou
+  nc -zv <ip_ou_nom_domaine> 22
+  ```
+
+### 2. Vérifier les informations d'utilisateur
+
+- Assurez-vous que **vous utilisez le bon nom d'utilisateur**. Essayez de vous connecter avec :
+  ```bash
+  ssh <utilisateur>@<ip_ou_nom_domaine>
+  ```
+
+### 3. Vérifier les permissions du fichier de clé SSH
+
+- Si vous utilisez une clé SSH pour vous connecter, vérifiez que les permissions sont correctes sur votre machine locale :
+  ```bash
+  chmod 600 ~/.ssh/id_rsa
+  ```
+  - Remplacez `id_rsa` par le nom de votre fichier de clé si différent.
+
+### 4. Vérifier les logs de l'authentification SSH
+
+- Sur la machine cible, connectez-vous localement ou via un autre utilisateur et consultez les logs SSH pour voir pourquoi la connexion est refusée :
+  ```bash
+  sudo tail -f /var/log/secure
+  # ou
+  sudo tail -f /var/log/auth.log
+  ```
+  Cherchez les messages indiquant les erreurs spécifiques lors des tentatives de connexion.
+
+### 5. Vérifier la configuration SSH du serveur
+
+- Assurez-vous que le fichier de configuration SSH `/etc/ssh/sshd_config` est correctement configuré :
+  ```bash
+  sudo nano /etc/ssh/sshd_config
+  ```
+  Vérifiez les points suivants :
+  - `PermitRootLogin` est correctement défini (`yes` ou `no` selon vos besoins).
+  - `PasswordAuthentication` est défini sur `yes` si vous utilisez des mots de passe.
+  - `AllowUsers` ou `AllowGroups` (s'ils sont définis) incluent votre utilisateur.
+
+  Après toute modification, redémarrez le service SSH :
+  ```bash
+  sudo systemctl restart sshd
+  ```
+
+### 6. Vérifier l'état du service SSH
+
+- Vérifiez si le service SSH fonctionne correctement :
+  ```bash
+  sudo systemctl status sshd
+  ```
+
+### 7. Vérifier l'authentification basée sur les clés
+
+- Si vous utilisez des clés SSH, assurez-vous que votre clé publique est correctement ajoutée au fichier `~/.ssh/authorized_keys` de l'utilisateur cible sur la machine distante.
+
+### 8. Tester la connexion avec un niveau de débogage élevé
+
+- Utilisez l'option `-v` (ou `-vv` ou `-vvv` pour plus de détails) pour obtenir plus d'informations sur la tentative de connexion :
+  ```bash
+  ssh -v <utilisateur>@<ip_ou_nom_domaine>
+  ```
+
+### 9. Vérifier les permissions du répertoire home
+
+- Assurez-vous que les permissions de votre répertoire home et du répertoire `.ssh` sur la machine cible sont correctement définies :
+  ```bash
+  chmod 700 ~
+  chmod 700 ~/.ssh
+  chmod 600 ~/.ssh/authorized_keys
+  ```
+
+### 10. Autres vérifications
+
+- **Firewall** : Assurez-vous que le pare-feu de la machine cible n'empêche pas les connexions SSH. Vous pouvez vérifier et ajuster les règles de `firewalld` ou `iptables` en conséquence.
+  ```bash
+  sudo firewall-cmd --list-all
+  # ou
+  sudo iptables -L
+  ```
+- **SELinux** : Si SELinux est activé, vérifiez qu'il ne bloque pas l'accès SSH.
+  ```bash
+  sudo sestatus
+  ```
+
+Si après toutes ces vérifications vous avez encore des problèmes, n'hésitez pas à fournir plus de détails pour des étapes de dépannage supplémentaires.
