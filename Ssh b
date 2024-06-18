@@ -1,0 +1,105 @@
+Pour modifier le texte du message de la bannière de session sur Ubuntu 22.04, vous devez modifier plusieurs fichiers selon le type de bannière que vous souhaitez ajuster. Voici un guide pour chaque type de bannière :
+
+1. **Bannière de connexion SSH** (`/etc/ssh/sshd_config` et `/etc/motd`):
+   - La bannière affichée lors de la connexion via SSH peut être configurée dans le fichier `sshd_config` et/ou dans le fichier `motd` (Message of the Day).
+
+2. **Bannière de connexion graphique (GDM)**:
+   - Cette bannière est généralement configurée dans les fichiers liés au gestionnaire de fenêtres GDM (Gnome Display Manager).
+
+### 1. Bannière de connexion SSH
+
+1. **Configurer la bannière SSH**:
+   - Ouvrez le fichier de configuration SSH `sshd_config` :
+     ```bash
+     sudo nano /etc/ssh/sshd_config
+     ```
+   - Trouvez la ligne contenant `Banner` et décommentez-la (enlevez le `#` au début) ou ajoutez-la si elle n'existe pas :
+     ```plaintext
+     Banner /etc/issue.net
+     ```
+   - Enregistrez et fermez le fichier (`Ctrl + O`, puis `Ctrl + X` dans Nano).
+
+2. **Modifier le fichier `/etc/issue.net`** :
+   - Éditez le fichier `/etc/issue.net` pour y ajouter le message de votre choix :
+     ```bash
+     sudo nano /etc/issue.net
+     ```
+   - Ajoutez votre message personnalisé. Par exemple :
+     ```plaintext
+     Bienvenue sur le serveur Ubuntu 22.04. Utilisation autorisée uniquement.
+     ```
+   - Enregistrez et fermez le fichier (`Ctrl + O`, puis `Ctrl + X`).
+
+3. **Redémarrer le service SSH** :
+   - Appliquez les modifications en redémarrant le service SSH :
+     ```bash
+     sudo systemctl restart ssh
+     ```
+
+### 2. Bannière de connexion graphique (GDM)
+
+Pour personnaliser le message de la bannière GDM (écran de connexion graphique), vous devez modifier les fichiers de configuration GDM.
+
+1. **Modifier la configuration GDM** :
+   - Éditez le fichier `/etc/gdm3/greeter.dconf-defaults` :
+     ```bash
+     sudo nano /etc/gdm3/greeter.dconf-defaults
+     ```
+   - Ajoutez ou modifiez la section `[org/gnome/login-screen]` avec votre message personnalisé. Par exemple :
+     ```plaintext
+     [org/gnome/login-screen]
+     banner-message-enable=true
+     banner-message-text='Bienvenue sur Ubuntu 22.04'
+     ```
+
+2. **Appliquer les changements** :
+   - Après avoir enregistré vos modifications, mettez à jour les paramètres GDM avec la commande suivante :
+     ```bash
+     sudo dconf update
+     ```
+   - Redémarrez GDM pour appliquer les modifications :
+     ```bash
+     sudo systemctl restart gdm3
+     ```
+
+### 3. Message du jour (MOTD)
+
+Le fichier `/etc/motd` est affiché après une connexion réussie sur la console. Vous pouvez personnaliser ce fichier de la manière suivante :
+
+1. **Éditez le fichier `/etc/motd`** :
+   - Ouvrez le fichier dans un éditeur de texte :
+     ```bash
+     sudo nano /etc/motd
+     ```
+   - Ajoutez votre message personnalisé. Par exemple :
+     ```plaintext
+     Bienvenue sur Ubuntu 22.04. Veuillez respecter les règles d'utilisation.
+     ```
+   - Enregistrez et fermez le fichier (`Ctrl + O`, puis `Ctrl + X`).
+
+### Résumé des commandes
+
+```bash
+# Modifier la bannière SSH
+sudo nano /etc/ssh/sshd_config
+# Ajouter ou décommenter la ligne suivante
+# Banner /etc/issue.net
+sudo nano /etc/issue.net
+# Ajouter votre message personnalisé dans /etc/issue.net
+sudo systemctl restart ssh
+
+# Modifier la bannière de connexion graphique GDM
+sudo nano /etc/gdm3/greeter.dconf-defaults
+# Ajouter la section suivante
+# [org/gnome/login-screen]
+# banner-message-enable=true
+# banner-message-text='Bienvenue sur Ubuntu 22.04'
+sudo dconf update
+sudo systemctl restart gdm3
+
+# Modifier le Message of the Day (MOTD)
+sudo nano /etc/motd
+# Ajouter votre message personnalisé dans /etc/motd
+```
+
+En suivant ces étapes, vous pouvez personnaliser les messages de bienvenue ou d'avertissement sur votre système Ubuntu 22.04.
