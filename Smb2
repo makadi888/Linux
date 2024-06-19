@@ -1,0 +1,90 @@
+D'accord, si vous avez besoin de configurer et vérifier le montage SMB via le fichier `smb.fstab`, voici comment procéder :
+
+### Étapes pour configurer `smb.fstab`
+
+1. **Créer le fichier `smb.fstab`:**
+   Si le fichier `smb.fstab` n'existe pas, vous pouvez le créer dans le répertoire `/etc/samba/` ou un autre emplacement de votre choix. Par exemple :
+
+   ```bash
+   sudo nano /etc/samba/smb.fstab
+   ```
+
+2. **Ajouter les informations de montage:**
+   Ajoutez les lignes nécessaires pour le montage SMB dans ce fichier. Le format est similaire à celui utilisé dans `/etc/fstab`. Voici un exemple :
+
+   ```
+   //serveur/dossier_partage /mnt/mon_partage_smb cifs credentials=/etc/samba/credentials,iocharset=utf8,uid=1000,gid=1000 0 0
+   ```
+
+   - `//serveur/dossier_partage` : Chemin du partage SMB.
+   - `/mnt/mon_partage_smb` : Point de montage local.
+   - `cifs` : Type de système de fichiers (Common Internet File System).
+   - `credentials=/etc/samba/credentials` : Chemin vers le fichier de crédentials (pour stocker le nom d'utilisateur et le mot de passe).
+   - `iocharset=utf8` : Charset pour le montage, UTF-8 recommandé pour la compatibilité avec les caractères spéciaux.
+   - `uid=1000,gid=1000` : Définition des UID et GID (propriétaire du point de montage, habituellement l'utilisateur actuel).
+
+3. **Créer un fichier de crédentials:**
+   Pour éviter de stocker le mot de passe en clair dans `smb.fstab`, utilisez un fichier de crédentials.
+
+   ```bash
+   sudo nano /etc/samba/credentials
+   ```
+
+   Contenu du fichier :
+   ```
+   username=mon_utilisateur
+   password=mon_mot_de_passe
+   ```
+
+   Protégez le fichier :
+   ```bash
+   sudo chmod 600 /etc/samba/credentials
+   ```
+
+4. **Monter le partage SMB avec `smbmount`:**
+   Utilisez la commande `smbmount` (ou simplement `mount` avec le fichier de configuration) pour monter les partages définis dans `smb.fstab`.
+
+   ```bash
+   sudo mount -t cifs -o credentials=/etc/samba/credentials,iocharset=utf8,uid=1000,gid=1000 //serveur/dossier_partage /mnt/mon_partage_smb
+   ```
+
+   Ou, pour lire depuis `smb.fstab` :
+
+   ```bash
+   sudo mount -a -t cifs -o credentials=/etc/samba/credentials,iocharset=utf8,uid=1000,gid=1000
+   ```
+
+5. **Automatiser le montage au démarrage:**
+   Pour automatiser le montage lors du démarrage, ajoutez une ligne dans `/etc/fstab` qui appelle `smb.fstab`.
+
+   ```bash
+   sudo nano /etc/fstab
+   ```
+
+   Ajoutez la ligne :
+
+   ```
+   //serveur/dossier_partage /mnt/mon_partage_smb cifs credentials=/etc/samba/credentials,iocharset=utf8,uid=1000,gid=1000 0 0
+   ```
+
+6. **Vérifier le montage:**
+   Utilisez la commande suivante pour monter tous les systèmes de fichiers spécifiés dans `fstab` :
+
+   ```bash
+   sudo mount -a
+   ```
+
+   Et vérifiez avec :
+
+   ```bash
+   df -h
+   ```
+
+   Ou :
+
+   ```bash
+   mount | grep cifs
+   ```
+
+### Note:
+La gestion des fichiers `smb.fstab` peut varier selon la distribution et la version de Linux utilisée. Assurez-vous que les chemins et les commandes correspondent à votre environnement spécifique.
