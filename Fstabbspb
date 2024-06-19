@@ -1,0 +1,127 @@
+Je comprends que vous souhaitez utiliser `smbfstab`, un outil spécifique qui automatise la gestion des montages SMB via des fichiers de configuration. Suivons les étapes pour configurer et utiliser `smbfstab`.
+
+### Étapes pour installer et configurer `smbfstab` sur Ubuntu
+
+1. **Installation de `smbfstab` et de ses dépendances**
+
+   Assurez-vous que `cifs-utils` est installé, puis installez `smbfstab` depuis son dépôt GitHub.
+
+   ```bash
+   sudo apt update
+   sudo apt install cifs-utils git
+   ```
+
+   Clonez le dépôt `smbfstab` et installez-le :
+
+   ```bash
+   git clone https://github.com/gavinhungry/smbfstab.git
+   cd smbfstab
+   sudo make install
+   ```
+
+   Cela va installer `smbfstab` et créer les répertoires nécessaires.
+
+2. **Créer un fichier de configuration `smbfstab`**
+
+   Le fichier de configuration principal de `smbfstab` est `/etc/smbfstab`. Vous pouvez y spécifier les partages réseau SMB que vous souhaitez monter.
+
+   Ouvrez le fichier `/etc/smbfstab` avec un éditeur de texte :
+
+   ```bash
+   sudo nano /etc/smbfstab
+   ```
+
+   Ajoutez-y les détails de votre partage SMB :
+
+   ```plaintext
+   //serveur/chemin_du_partage /mnt/mon_partage user=VotreNomUtilisateur,pass=VotreMotDePasse
+   ```
+
+   - **`//serveur/chemin_du_partage`** : Adresse de votre partage SMB, par exemple, `//192.168.1.100/partage`.
+   - **`/mnt/mon_partage`** : Le point de montage où le partage sera accessible.
+   - **`user=VotreNomUtilisateur,pass=VotreMotDePasse`** : Identifiants SMB pour accéder au partage. Pour plus de sécurité, vous pouvez utiliser un fichier de credentials comme décrit ci-dessous.
+
+3. **(Optionnel) Utiliser un fichier de credentials sécurisé**
+
+   Pour éviter de mettre directement vos identifiants dans le fichier `/etc/smbfstab`, vous pouvez utiliser un fichier séparé pour les credentials. Créez un fichier comme `/etc/smbfstab-credentials` :
+
+   ```bash
+   sudo nano /etc/smbfstab-credentials
+   ```
+
+   Ajoutez-y les lignes suivantes :
+
+   ```plaintext
+   username=VotreNomUtilisateur
+   password=VotreMotDePasse
+   ```
+
+   Changez les permissions pour sécuriser le fichier :
+
+   ```bash
+   sudo chmod 600 /etc/smbfstab-credentials
+   ```
+
+   Modifiez ensuite votre entrée dans `/etc/smbfstab` pour utiliser ce fichier :
+
+   ```plaintext
+   //serveur/chemin_du_partage /mnt/mon_partage credentials=/etc/smbfstab-credentials
+   ```
+
+4. **Monter les partages SMB**
+
+   Utilisez `smbfstab` pour monter les partages spécifiés dans le fichier `/etc/smbfstab` :
+
+   ```bash
+   sudo smbfstab mount
+   ```
+
+   Cette commande montera tous les partages définis dans `/etc/smbfstab`.
+
+5. **Vérifier le montage**
+
+   Pour vérifier que les partages sont montés correctement, utilisez les commandes suivantes :
+
+   ```bash
+   df -h | grep /mnt/mon_partage
+   ls /mnt/mon_partage
+   ```
+
+   Cela affichera les détails de l'espace disque pour le partage monté ou son contenu.
+
+### Résumé des commandes
+
+```bash
+# Mettre à jour et installer cifs-utils et git
+sudo apt update
+sudo apt install cifs-utils git
+
+# Cloner et installer smbfstab
+git clone https://github.com/gavinhungry/smbfstab.git
+cd smbfstab
+sudo make install
+
+# Créer et éditer le fichier de configuration smbfstab
+sudo nano /etc/smbfstab
+# Ajouter l'entrée pour le partage SMB
+# //serveur/chemin_du_partage /mnt/mon_partage user=VotreNomUtilisateur,pass=VotreMotDePasse
+# Ou, pour utiliser un fichier de credentials sécurisé
+# //serveur/chemin_du_partage /mnt/mon_partage credentials=/etc/smbfstab-credentials
+
+# Créer le fichier de credentials (optionnel)
+sudo nano /etc/smbfstab-credentials
+# Ajouter les identifiants
+# username=VotreNomUtilisateur
+# password=VotreMotDePasse
+# S'assurer que le fichier de credentials est sécurisé
+sudo chmod 600 /etc/smbfstab-credentials
+
+# Monter les partages
+sudo smbfstab mount
+
+# Vérifier le montage
+df -h | grep /mnt/mon_partage
+ls /mnt/mon_partage
+```
+
+En suivant ces étapes, vous devriez pouvoir configurer et utiliser `smbfstab` pour monter des partages SMB sur votre VM Ubuntu.
