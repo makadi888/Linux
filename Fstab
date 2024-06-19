@@ -1,0 +1,99 @@
+Pour monter un dossier partagé sous Ubuntu à l'aide de `smbfstab`, vous devez suivre plusieurs étapes. Voici un guide détaillé pour vous aider à le faire :
+
+### Prérequis
+Assurez-vous que vous avez :
+1. L'adresse IP ou le nom de domaine du serveur où le dossier est partagé.
+2. Le nom du partage réseau (le dossier partagé).
+3. Un nom d'utilisateur et un mot de passe avec les permissions appropriées pour accéder au dossier partagé.
+
+### Étapes à suivre
+
+#### 1. Installer les paquets nécessaires
+Vous devez d'abord installer le paquet `cifs-utils` qui inclut les outils nécessaires pour monter des systèmes de fichiers SMB/CIFS.
+
+```bash
+sudo apt update
+sudo apt install cifs-utils -y
+```
+
+#### 2. Créer un répertoire de montage
+Créez un répertoire local où le dossier partagé sera monté. Par exemple, vous pouvez créer un répertoire dans `/mnt`.
+
+```bash
+sudo mkdir -p /mnt/mon_dossier_partage
+```
+
+#### 3. Modifier le fichier `/etc/smbfstab`
+Le fichier `smbfstab` est utilisé pour configurer les montages SMB au démarrage. Ouvrez ou créez le fichier `/etc/smbfstab` avec un éditeur de texte, par exemple `nano`.
+
+```bash
+sudo nano /etc/smbfstab
+```
+
+Ajoutez une ligne pour chaque partage que vous souhaitez monter. La syntaxe générale est :
+
+```plaintext
+//server_address/share_name /mnt/mount_point cifs username=user,password=pass,iocharset=utf8,sec=ntlm 0 0
+```
+
+Par exemple, pour monter un partage appelé `partage` depuis le serveur `192.168.1.100` sur le répertoire local `/mnt/mon_dossier_partage` avec le nom d'utilisateur `user` et le mot de passe `password`, ajoutez la ligne suivante :
+
+```plaintext
+//192.168.1.100/partage /mnt/mon_dossier_partage cifs username=user,password=password,iocharset=utf8,sec=ntlm 0 0
+```
+
+**Note:** Pour des raisons de sécurité, il est préférable de ne pas inclure les informations d'identification directement dans le fichier. Utilisez plutôt un fichier de configuration séparé pour stocker les informations d'identification.
+
+#### 4. (Optionnel) Créer un fichier de configuration pour les informations d'identification
+Pour éviter de stocker les informations d'identification dans `smbfstab`, vous pouvez les stocker dans un fichier séparé. Par exemple, créez un fichier `~/.smbcredentials`.
+
+```bash
+nano ~/.smbcredentials
+```
+
+Ajoutez-y :
+
+```plaintext
+username=user
+password=password
+```
+
+Ensuite, modifiez les permissions du fichier pour qu'il ne soit lisible que par vous :
+
+```bash
+chmod 600 ~/.smbcredentials
+```
+
+Ensuite, modifiez la ligne dans `/etc/smbfstab` pour utiliser ce fichier d'identification :
+
+```plaintext
+//192.168.1.100/partage /mnt/mon_dossier_partage cifs credentials=/home/votre_utilisateur/.smbcredentials,iocharset=utf8,sec=ntlm 0 0
+```
+
+Remplacez `/home/votre_utilisateur` par votre chemin d'utilisateur réel.
+
+#### 5. Monter le partage
+Après avoir configuré `smbfstab`, montez le partage en exécutant :
+
+```bash
+sudo mount -a
+```
+
+Cela montera tous les systèmes de fichiers mentionnés dans `/etc/smbfstab`.
+
+#### 6. Vérifier le montage
+Assurez-vous que le partage est monté correctement en listant les fichiers dans le répertoire de montage :
+
+```bash
+ls /mnt/mon_dossier_partage
+```
+
+Vous devriez voir le contenu du partage réseau.
+
+### Notes supplémentaires
+
+- Si vous rencontrez des problèmes de permissions, assurez-vous que votre utilisateur a les droits nécessaires sur le répertoire de montage.
+- Les options `iocharset=utf8` et `sec=ntlm` sont couramment utilisées mais peuvent être modifiées en fonction de vos besoins spécifiques.
+- Utilisez `sudo umount /mnt/mon_dossier_partage` pour démonter le partage si nécessaire.
+
+Avec ces instructions, vous devriez pouvoir monter votre dossier partagé SMB/CIFS sur Ubuntu avec `smbfstab`.
