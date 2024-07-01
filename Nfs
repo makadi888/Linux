@@ -1,0 +1,194 @@
+Pour configurer un serveur NFS (Network File System) et SMB (Server Message Block) sur Ubuntu avec des dossiers partagés en lecture seule, suivez ces étapes :
+
+## Installation et Configuration de NFS
+
+### Étape 1 : Installation du serveur NFS
+
+Sur le serveur Ubuntu où vous voulez configurer NFS, installez le package `nfs-kernel-server`.
+
+```bash
+sudo apt update
+sudo apt install nfs-kernel-server -y
+```
+
+### Étape 2 : Créer les dossiers à partager
+
+Créez les dossiers que vous souhaitez partager. Par exemple :
+
+```bash
+sudo mkdir -p /srv/nfs/shared1
+sudo mkdir -p /srv/nfs/shared2
+```
+
+### Étape 3 : Configurer les permissions des dossiers
+
+Assurez-vous que les permissions sont appropriées. Par exemple, pour autoriser seulement la lecture :
+
+```bash
+sudo chown nobody:nogroup /srv/nfs/shared1 /srv/nfs/shared2
+sudo chmod 755 /srv/nfs/shared1 /srv/nfs/shared2
+```
+
+### Étape 4 : Configurer les exports NFS
+
+Éditez le fichier `/etc/exports` pour ajouter les dossiers à partager. Ajoutez les lignes suivantes :
+
+```bash
+/srv/nfs/shared1 client_ip(ro,sync,no_subtree_check)
+/srv/nfs/shared2 client_ip(ro,sync,no_subtree_check)
+```
+
+Remplacez `client_ip` par l'adresse IP de l'autre serveur ou par `*` pour autoriser tous les clients. Par exemple :
+
+```bash
+/srv/nfs/shared1 192.168.1.100(ro,sync,no_subtree_check)
+/srv/nfs/shared2 192.168.1.100(ro,sync,no_subtree_check)
+```
+
+### Étape 5 : Appliquer les modifications
+
+Appliquez les nouvelles configurations avec la commande suivante :
+
+```bash
+sudo exportfs -a
+```
+
+### Étape 6 : Redémarrer le serveur NFS
+
+Redémarrez le service NFS pour que les changements prennent effet.
+
+```bash
+sudo systemctl restart nfs-kernel-server
+```
+
+### Étape 7 : Vérifier les partages NFS
+
+Pour vérifier que les dossiers sont bien partagés :
+
+```bash
+sudo exportfs -v
+```
+
+### Étape 8 : Monter les partages NFS sur le client
+
+Sur l'autre serveur (client), installez le package `nfs-common` et montez les partages :
+
+```bash
+sudo apt update
+sudo apt install nfs-common -y
+sudo mkdir -p /mnt/nfs/shared1
+sudo mkdir -p /mnt/nfs/shared2
+```
+
+Montez les dossiers partagés en lecture seule :
+
+```bash
+sudo mount -t nfs server_ip:/srv/nfs/shared1 /mnt/nfs/shared1
+sudo mount -t nfs server_ip:/srv/nfs/shared2 /mnt/nfs/shared2
+```
+
+Remplacez `server_ip` par l'adresse IP du serveur NFS.
+
+### Étape 9 : Ajouter les montages permanents (optionnel)
+
+Pour que les partages soient montés automatiquement au démarrage, ajoutez-les à `/etc/fstab` sur le client :
+
+```bash
+server_ip:/srv/nfs/shared1 /mnt/nfs/shared1 nfs ro,sync 0 0
+server_ip:/srv/nfs/shared2 /mnt/nfs/shared2 nfs ro,sync 0 0
+```
+
+## Installation et Configuration de Samba (SMB)
+
+### Étape 1 : Installation du serveur Samba
+
+Sur le serveur Ubuntu où vous voulez configurer SMB, installez le package `samba`.
+
+```bash
+sudo apt update
+sudo apt install samba -y
+```
+
+### Étape 2 : Créer les dossiers à partager
+
+Utilisez les mêmes dossiers que pour NFS ou créez-en de nouveaux :
+
+```bash
+sudo mkdir -p /srv/samba/shared1
+sudo mkdir -p /srv/samba/shared2
+```
+
+### Étape 3 : Configurer les permissions des dossiers
+
+Modifiez les permissions pour les dossiers partagés pour Samba. Par exemple, pour autoriser seulement la lecture :
+
+```bash
+sudo chown nobody:nogroup /srv/samba/shared1 /srv/samba/shared2
+sudo chmod 755 /srv/samba/shared1 /srv/samba/shared2
+```
+
+### Étape 4 : Configurer les partages Samba
+
+Éditez le fichier de configuration Samba `/etc/samba/smb.conf`. Ajoutez les lignes suivantes à la fin du fichier pour partager les dossiers :
+
+```conf
+[shared1]
+  path = /srv/samba/shared1
+  browseable = yes
+  read only = yes
+  guest ok = yes
+
+[shared2]
+  path = /srv/samba/shared2
+  browseable = yes
+  read only = yes
+  guest ok = yes
+```
+
+Ces paramètres configurent les dossiers pour être partagés en lecture seule et accessibles par les invités.
+
+### Étape 5 : Redémarrer le service Samba
+
+Pour appliquer les changements, redémarrez Samba :
+
+```bash
+sudo systemctl restart smbd
+```
+
+### Étape 6 : Vérifier les partages Samba
+
+Pour vérifier que les dossiers sont partagés via Samba :
+
+```bash
+smbclient -L localhost
+```
+
+### Étape 7 : Accéder aux partages Samba sur le client
+
+Sur l'autre serveur ou sur n'importe quel client, utilisez les commandes suivantes pour accéder aux partages :
+
+```bash
+sudo apt install smbclient cifs-utils -y
+sudo mkdir -p /mnt/smb/shared1
+sudo mkdir -p /mnt/smb/shared2
+```
+
+Montez les dossiers partagés en lecture seule :
+
+```bash
+sudo mount -t cifs //server_ip/shared1 /mnt/smb/shared1 -o ro,guest
+sudo mount -t cifs //server_ip/shared2 /mnt/smb/shared2 -o ro,guest
+```
+
+Remplacez `server_ip` par l'adresse IP du serveur SMB.
+
+### Étape 8 : Ajouter les montages permanents (optionnel)
+
+Pour que les partages Samba soient montés automatiquement au démarrage, ajoutez-les à `/etc/fstab` sur le client :
+
+```bash
+//server_ip/shared1 /mnt/smb/shared1 cifs ro,guest,vers=3.0 0 0
+//server_ip/shared2 /mnt/smb/shared2 cifs ro,guest,vers=3.0 0 0
+```
+
+Avec ces configurations, vous aurez des dossiers partagés en lecture seule disponibles à la fois via NFS et SMB.
