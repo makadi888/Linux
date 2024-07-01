@@ -1,0 +1,124 @@
+Pour automatiser l'installation et la configuration d'un serveur NFS et SMB sur Ubuntu avec Ansible, vous pouvez créer un playbook Ansible. Ce playbook effectuera les étapes nécessaires pour configurer les partages NFS et SMB comme décrit précédemment. Voici comment vous pouvez le structurer :
+
+### Préparation
+
+1. **Prérequis**: Assurez-vous d'avoir Ansible installé sur votre machine de contrôle.
+2. **Inventaire**: Vous devez disposer d'un fichier d'inventaire spécifiant les hôtes cibles (les serveurs à configurer).
+
+### Fichier d'inventaire (inventory.yml)
+
+Créez un fichier d'inventaire pour spécifier les serveurs :
+
+```yaml
+all:
+  hosts:
+    server_nfs_smb:
+      ansible_host: 192.168.1.10  # Adresse IP de votre serveur
+      ansible_user: ubuntu        # Utilisateur pour la connexion SSH
+```
+
+### Playbook Ansible (nfs_smb_setup.yml)
+
+Voici le playbook Ansible pour installer et configurer NFS et SMB avec des dossiers partagés en lecture seule :
+
+```yaml
+---
+- name: Configure NFS and SMB server
+  hosts: server_nfs_smb
+  become: yes
+  vars:
+    nfs_shared_directories:
+      - /srv/nfs/shared1
+      - /srv/nfs/shared2
+    samba_shared_directories:
+      - /srv/samba/shared1
+      - /srv/samba/shared2
+    client_ip: "192.168.1.100"  # Remplacez par l'adresse IP du client NFS
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install NFS and Samba packages
+      apt:
+        name:
+          - nfs-kernel-server
+          - samba
+        state: present
+
+    - name: Create NFS shared directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: nobody
+        group: nogroup
+        mode: '0755'
+      loop: "{{ nfs_shared_directories }}"
+
+    - name: Create Samba shared directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: nobody
+        group: nogroup
+        mode: '0755'
+      loop: "{{ samba_shared_directories }}"
+
+    - name: Configure NFS exports
+      blockinfile:
+        path: /etc/exports
+        block: |
+          {{ nfs_shared_directories[0] }} {{ client_ip }}(ro,sync,no_subtree_check)
+          {{ nfs_shared_directories[1] }} {{ client_ip }}(ro,sync,no_subtree_check)
+      notify: Restart NFS server
+
+    - name: Configure Samba shares
+      blockinfile:
+        path: /etc/samba/smb.conf
+        block: |
+          [shared1]
+          path = {{ samba_shared_directories[0] }}
+          browseable = yes
+          read only = yes
+          guest ok = yes
+
+          [shared2]
+          path = {{ samba_shared_directories[1] }}
+          browseable = yes
+          read only = yes
+          guest ok = yes
+      notify: Restart Samba server
+
+  handlers:
+    - name: Restart NFS server
+      service:
+        name: nfs-kernel-server
+        state: restarted
+
+    - name: Restart Samba server
+      service:
+        name: smbd
+        state: restarted
+```
+
+### Instructions pour exécuter le playbook
+
+1. **Créer l'inventaire** : Enregistrez le contenu du fichier d'inventaire ci-dessus dans un fichier nommé `inventory.yml`.
+
+2. **Créer le playbook** : Enregistrez le contenu du playbook Ansible dans un fichier nommé `nfs_smb_setup.yml`.
+
+3. **Exécuter le playbook** : Utilisez la commande suivante pour exécuter le playbook :
+
+   ```bash
+   ansible-playbook -i inventory.yml nfs_smb_setup.yml
+   ```
+
+### Explications
+
+- **Hosts et Become**: Le playbook cible le groupe `server_nfs_smb` spécifié dans l'inventaire et s'exécute avec des privilèges élevés (`become: yes`).
+- **Vars**: Les variables définissent les dossiers partagés et l'IP du client pour NFS.
+- **Tasks**: Les tâches couvrent l'installation des packages, la création des répertoires partagés, la configuration des partages NFS et SMB, et le redémarrage des services.
+- **Handlers**: Les handlers redémarrent les services NFS et Samba après la modification de leurs configurations.
+
+Ce playbook configure les services NFS et SMB sur votre serveur, créant des dossiers partagés accessibles en lecture seule par le client spécifié.
