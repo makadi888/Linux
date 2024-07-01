@@ -1,0 +1,100 @@
+Pour installer Java 21 sur Ubuntu avec toutes les configurations nécessaires, voici un guide étape par étape. Assurons-nous d'installer la version JDK (Java Development Kit), qui est nécessaire pour le développement, et non seulement JRE (Java Runtime Environment).
+
+### Étape 1 : Mettre à jour les paquets
+
+Avant de commencer l'installation, assurez-vous que votre système est à jour.
+
+```bash
+sudo apt update
+sudo apt upgrade -y
+```
+
+### Étape 2 : Ajouter le dépôt PPA (si nécessaire)
+
+Les versions les plus récentes de Java sont souvent disponibles via des dépôts PPA gérés par la communauté. Pour Java 21, vous pouvez utiliser le PPA de Linux Uprising.
+
+```bash
+sudo add-apt-repository ppa:linuxuprising/java
+sudo apt update
+```
+
+### Étape 3 : Installer OpenJDK 21
+
+Utilisez la commande suivante pour installer OpenJDK 21 :
+
+```bash
+sudo apt install openjdk-21-jdk -y
+```
+
+### Étape 4 : Configurer les alternatives Java
+
+Après l'installation, vous devez configurer votre système pour utiliser Java 21 par défaut.
+
+```bash
+sudo update-alternatives --config java
+```
+
+Vous verrez une liste de versions Java installées. Choisissez le numéro correspondant à Java 21.
+
+Vous devrez faire de même pour `javac` :
+
+```bash
+sudo update-alternatives --config javac
+```
+
+### Étape 5 : Vérifier l'installation
+
+Pour vérifier que Java 21 est correctement installé et configuré, exécutez les commandes suivantes :
+
+```bash
+java -version
+```
+
+```bash
+javac -version
+```
+
+Vous devriez voir des sorties indiquant que Java 21 est en cours d'utilisation.
+
+### Étape 6 : Configurer les variables d'environnement
+
+Ajoutez les variables d'environnement pour Java en modifiant le fichier `/etc/environment` ou votre fichier de configuration de shell (`~/.bashrc`, `~/.zshrc`, etc.).
+
+Ouvrez le fichier `/etc/environment` avec un éditeur de texte, par exemple :
+
+```bash
+sudo nano /etc/environment
+```
+
+Ajoutez les lignes suivantes en bas du fichier, en remplaçant le chemin par le chemin correct de votre installation Java :
+
+```bash
+JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+PATH="$PATH:$JAVA_HOME/bin"
+```
+
+Après avoir enregistré les modifications, rechargez les variables d'environnement :
+
+```bash
+source /etc/environment
+```
+
+### Étape 7 : Vérifier les variables d'environnement
+
+Pour vérifier que les variables d'environnement ont été correctement configurées, utilisez les commandes suivantes :
+
+```bash
+echo $JAVA_HOME
+```
+
+```bash
+echo $PATH
+```
+
+Vous devriez voir le chemin vers l'installation de Java et `JAVA_HOME` respectivement.
+
+### Conclusion
+
+Vous avez maintenant Java 21 installé et configuré sur votre système Ubuntu. Vous êtes prêt à développer ou à exécuter des applications Java avec cette version.
+
+Si vous avez des besoins spécifiques ou des questions supplémentaires sur la configuration de Java, n'hésitez pas à demander.
