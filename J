@@ -1,0 +1,127 @@
+Pour réaliser deux services Spring Boot avec deux points de terminaison (endpoints) distincts, et les déployer sur un serveur Ubuntu, voici les étapes générales que vous pouvez suivre :
+
+### Étape 1 : Préparer vos applications Spring Boot
+
+1. **Créer deux projets Spring Boot distincts** : Utilisez Spring Initializr ou votre IDE préféré pour créer deux projets Spring Boot. Chaque projet représentera un service distinct.
+   - Choisissez les dépendances nécessaires pour chaque service.
+   - Configurez les points de terminaison (`@RestController`) pour chaque service.
+
+   Exemple d'un contrôleur simple dans chaque service :
+   ```java
+   @RestController
+   public class Service1Controller {
+       @PatchMapping("/service1/endpoint1")
+       public ResponseEntity<String> updateService1(@RequestBody Map<String, String> request) {
+           // Logique de traitement pour le service 1
+           return ResponseEntity.ok("Service 1 mis à jour");
+       }
+   }
+   ```
+
+   ```java
+   @RestController
+   public class Service2Controller {
+       @PatchMapping("/service2/endpoint2")
+       public ResponseEntity<String> updateService2(@RequestBody Map<String, String> request) {
+           // Logique de traitement pour le service 2
+           return ResponseEntity.ok("Service 2 mis à jour");
+       }
+   }
+   ```
+
+2. **Configurer les ports de chaque service** : Par défaut, les applications Spring Boot utilisent le port 8080. Pour éviter les conflits, chaque service doit écouter sur un port différent. Modifiez le fichier `application.properties` ou `application.yml` pour chaque projet :
+   - Pour le premier service :
+     ```properties
+     server.port=8081
+     ```
+   - Pour le deuxième service :
+     ```properties
+     server.port=8082
+     ```
+
+### Étape 2 : Emballer et préparer vos applications
+
+1. **Construire les fichiers JAR** : Utilisez Maven ou Gradle pour construire vos projets et générer les fichiers JAR.
+   - Avec Maven :
+     ```bash
+     mvn clean package
+     ```
+   - Avec Gradle :
+     ```bash
+     gradle clean build
+     ```
+
+   Vous devriez obtenir deux fichiers JAR, par exemple `service1-0.0.1-SNAPSHOT.jar` et `service2-0.0.1-SNAPSHOT.jar`.
+
+### Étape 3 : Configurer le serveur Ubuntu
+
+1. **Transférer les fichiers JAR sur le serveur** : Utilisez `scp` ou un autre outil de transfert de fichiers pour copier les fichiers JAR sur votre serveur Ubuntu.
+
+2. **Installer Java** : Assurez-vous que Java est installé sur le serveur. Vous pouvez vérifier cela avec :
+   ```bash
+   java -version
+   ```
+   Sinon, installez OpenJDK :
+   ```bash
+   sudo apt update
+   sudo apt install openjdk-11-jre
+   ```
+
+3. **Créer des scripts de démarrage pour chaque service** : Créez des scripts pour démarrer chaque service. Par exemple, pour le premier service :
+   ```bash
+   #!/bin/bash
+   java -jar /chemin/vers/votre/service1-0.0.1-SNAPSHOT.jar
+   ```
+   Faites de même pour le deuxième service, en ajustant le chemin et le fichier JAR.
+
+   Rendre les scripts exécutables :
+   ```bash
+   chmod +x start-service1.sh
+   chmod +x start-service2.sh
+   ```
+
+4. **Configurer les services systemd** : Créez des fichiers de service pour systemd afin de gérer vos applications. Par exemple, pour le premier service :
+   Créez un fichier `/etc/systemd/system/service1.service` avec le contenu suivant :
+   ```ini
+   [Unit]
+   Description=Service Spring Boot 1
+   After=network.target
+
+   [Service]
+   User=ubuntu # ou l'utilisateur sous lequel vous voulez exécuter le service
+   ExecStart=/chemin/vers/votre/start-service1.sh
+   SuccessExitStatus=143
+   Restart=on-failure
+   RestartSec=10
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   Faites de même pour le deuxième service avec les modifications appropriées.
+
+5. **Démarrer et activer les services** :
+   ```bash
+   sudo systemctl start service1
+   sudo systemctl enable service1
+   sudo systemctl start service2
+   sudo systemctl enable service2
+   ```
+
+6. **Vérifier le statut des services** :
+   ```bash
+   sudo systemctl status service1
+   sudo systemctl status service2
+   ```
+
+### Étape 4 : Tester les services
+
+Utilisez `curl` ou un autre outil pour envoyer des requêtes PATCH à vos services pour vérifier qu'ils fonctionnent correctement :
+```bash
+curl -X PATCH http://votre-serveur:8081/service1/endpoint1 -d '{"clé": "valeur"}' -H "Content-Type: application/json"
+```
+```bash
+curl -X PATCH http://votre-serveur:8082/service2/endpoint2 -d '{"clé": "valeur"}' -H "Content-Type: application/json"
+```
+
+En suivant ces étapes, vous pouvez déployer et gérer deux services Spring Boot distincts sur un serveur Ubuntu.
