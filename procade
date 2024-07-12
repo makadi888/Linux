@@ -1,0 +1,78 @@
+Pour afficher les informations sur les licences des ports et la configuration de zoning sur un Fabric Interconnect Brocade, vous pouvez utiliser une série de commandes CLI (Command Line Interface). Voici les commandes pertinentes :
+
+### Afficher les Licences des Ports
+
+1. **Afficher toutes les licences installées** :
+    ```shell
+    licenseshow
+    ```
+    Cette commande affiche toutes les licences actuellement installées sur le switch.
+
+2. **Afficher les informations spécifiques des ports** :
+    ```shell
+    portshow
+    ```
+    Cette commande affiche des informations détaillées sur un port spécifique, y compris son état et les licences appliquées.
+
+### Afficher la Configuration de Zoning
+
+1. **Afficher la configuration actuelle du zoning** :
+    ```shell
+    cfgshow
+    ```
+    Cette commande affiche la configuration de zoning active ainsi que toutes les configurations de zoning définies.
+
+2. **Afficher tous les zones définis** :
+    ```shell
+    zoneshow
+    ```
+    Cette commande affiche toutes les zones et leurs membres dans la configuration de zoning.
+
+3. **Afficher les zones membres d'un alias spécifique** :
+    ```shell
+    alishow <alias_name>
+    ```
+    Remplacez `<alias_name>` par le nom de l'alias pour afficher ses membres.
+
+### Exemples d'utilisation
+
+- Pour afficher toutes les licences installées :
+    ```shell
+    licenseshow
+    ```
+
+- Pour afficher les informations spécifiques sur le port 1 :
+    ```shell
+    portshow 1
+    ```
+
+- Pour afficher la configuration de zoning active :
+    ```shell
+    cfgshow
+    ```
+
+- Pour afficher tous les zones définis :
+    ```shell
+    zoneshow
+    ```
+
+- Pour afficher les membres de l'alias `server_alias` :
+    ```shell
+    alishow server_alias
+    ```
+
+### Commandes supplémentaires
+
+1. **Afficher le statut du switch** :
+    ```shell
+    switchshow
+    ```
+    Affiche un résumé de l'état du switch.
+
+2. **Afficher les ports disponibles et leur statut** :
+    ```shell
+    portshow
+    ```
+    Fournit des informations détaillées sur tous les ports disponibles.
+
+En utilisant ces commandes, vous pouvez obtenir une vue complète sur les licences des ports et la configuration de zoning de votre Fabric Interconnect Brocade. Si vous avez des besoins spécifiques ou des configurations avancées, il peut y avoir d'autres commandes qui s'appliquent, alors n'hésitez pas à demander des détails supplémentaires.
