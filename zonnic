@@ -1,0 +1,229 @@
+Pour créer un rapport structuré présentant la configuration de zoning, le nombre de ports utilisés, le nombre de licences, le nombre de serveurs connectés, l'état des zones et l'état des alias sur un switch Brocade, vous pouvez suivre ce modèle détaillé. Ce modèle inclut des sections claires pour chaque aspect demandé et utilise les commandes Brocade appropriées pour collecter les données nécessaires.
+
+### Rapport d'État du Switch Brocade
+
+#### 1. Informations Générales du Switch
+
+```shell
+switchshow
+```
+**Sortie de la commande :**
+```
+Switch ID:     1
+Switch State:  Online
+Switch Name:   BrocadeSwitch
+Switch Type:   6520
+Fabric Name:   SAN_Fabric
+...
+```
+
+#### 2. Nombre de Licences Installées
+
+```shell
+licenseshow
+```
+**Sortie de la commande :**
+```
+Index  License Name    Status  Expiration Date
+0      Fabric License  Enabled  Never
+1      Trunking LicenseEnabled  Never
+...
+```
+**Résumé :**
+- Total des Licences : 2
+
+#### 3. Nombre de Ports Utilisés
+
+```shell
+portshow
+```
+**Sortie de la commande :**
+```
+port 0: id 0, 48G - Online       FC  2G  (Fabric)
+port 1: id 1, 48G - Online       FC  8G  (E-Port) License: Trunking
+port 2: id 2, 48G - Offline
+...
+```
+**Résumé :**
+- Ports Utilisés : 2
+- Ports Totaux : (Nombre total de ports listés)
+
+#### 4. Nombre de Serveurs Connectés
+
+Pour compter le nombre de serveurs connectés, nous pouvons utiliser les alias définis dans les zones :
+
+```shell
+alishow
+```
+**Sortie de la commande :**
+```
+alias: alias1
+  50:00:09:72:89:77:47:21
+  50:00:09:72:89:77:47:22
+alias: alias2
+  50:00:09:72:89:77:47:23
+...
+```
+**Résumé :**
+- Serveurs Connectés : (Nombre total de WWNs dans tous les alias)
+
+#### 5. État des Zones
+
+```shell
+cfgshow
+```
+**Sortie de la commande :**
+```
+Defined configuration:
+  cfg: cfg1
+    zone: zone1
+      alias1
+      alias2
+    zone: zone2
+      alias3
+      alias4
+
+Effective configuration:
+  cfg: cfg1
+```
+```shell
+zoneshow
+```
+**Sortie de la commande :**
+```
+zone: zone1
+  alias1; alias2
+zone: zone2
+  alias3; alias4
+...
+```
+**Résumé :**
+- Zones Définies : 2
+  - Zone1 : alias1, alias2
+  - Zone2 : alias3, alias4
+
+#### 6. État des Alias
+
+```shell
+alishow
+```
+**Sortie de la commande :**
+```
+alias: alias1
+  50:00:09:72:89:77:47:21
+  50:00:09:72:89:77:47:22
+alias: alias2
+  50:00:09:72:89:77:47:23
+...
+```
+**Résumé :**
+- Alias Définis : 2
+  - Alias1 : 2 membres
+  - Alias2 : 1 membre
+
+### Exemple de Rapport Complet
+
+Voici à quoi pourrait ressembler un rapport complet, formaté pour la présentation :
+
+---
+
+# Rapport d'État du Switch Brocade
+
+## 1. Informations Générales du Switch
+
+**Nom du Switch :** BrocadeSwitch  
+**ID du Switch :** 1  
+**État du Switch :** Online  
+**Type de Switch :** 6520  
+**Nom du Fabric :** SAN_Fabric  
+...
+
+## 2. Nombre de Licences Installées
+
+**Total des Licences :** 2  
+- Fabric License: Enabled, Expiration: Never  
+- Trunking License: Enabled, Expiration: Never  
+
+## 3. Nombre de Ports Utilisés
+
+**Ports Utilisés :** 2  
+**Ports Totaux :** (Nombre total de ports listés)
+
+## 4. Nombre de Serveurs Connectés
+
+**Serveurs Connectés :** (Nombre total de WWNs dans tous les alias)
+
+## 5. État des Zones
+
+**Zones Définies :** 2  
+- **Zone1 :** alias1, alias2  
+- **Zone2 :** alias3, alias4  
+
+## 6. État des Alias
+
+**Alias Définis :** 2  
+- **Alias1 :** 2 membres  
+  - 50:00:09:72:89:77:47:21  
+  - 50:00:09:72:89:77:47:22  
+- **Alias2 :** 1 membre  
+  - 50:00:09:72:89:77:47:23  
+
+---
+
+### Script pour Générer le Rapport
+
+Vous pouvez automatiser la génération de ce rapport en utilisant un script bash similaire à celui présenté ci-dessous :
+
+```bash
+#!/bin/bash
+
+# Nom du fichier de rapport
+report_file="rapport_brocade_$(date +%Y%m%d).txt"
+
+# Fonction pour ajouter une section au rapport
+add_section() {
+    echo -e "\n## $1\n" >> $report_file
+    echo -e "Commande : $2\n" >> $report_file
+    echo -e "Sortie :\n" >> $report_file
+    $2 >> $report_file
+}
+
+# Effacer le fichier de rapport s'il existe déjà
+> $report_file
+
+# Ajouter les sections du rapport
+add_section "Informations Générales du Switch" "switchshow"
+add_section "Nombre de Licences Installées" "licenseshow"
+
+# Compter le nombre de ports utilisés
+echo -e "\n## Nombre de Ports Utilisés\n" >> $report_file
+echo -e "Commande : portshow\n" >> $report_file
+echo -e "Sortie :\n" >> $report_file
+portshow >> $report_file
+used_ports=$(portshow | grep "Online" | wc -l)
+total_ports=$(portshow | wc -l)
+echo -e "\nPorts Utilisés : $used_ports\nPorts Totaux : $total_ports\n" >> $report_file
+
+# Compter le nombre de serveurs connectés
+echo -e "\n## Nombre de Serveurs Connectés\n" >> $report_file
+echo -e "Commande : alishow\n" >> $report_file
+echo -e "Sortie :\n" >> $report_file
+alishow >> $report_file
+connected_servers=$(alishow | grep -o "[0-9a-fA-F]\{2\}:[0-9a-fA-F]\{2\}:[0-9a-fA-F]\{2\}:[0-9a-fA-F]\{2\}:[0-9a-fA-F]\{2\}:[0-9a-fA-F]\{2\}:[0-9a-fA-F]\{2\}:[0-9a-fA-F]\{2\}" | wc -l)
+echo -e "\nServeurs Connectés : $connected_servers\n" >> $report_file
+
+# Ajouter l'état des zones
+add_section "État des Zones" "cfgshow"
+add_section "Liste des Zones et leurs Membres" "zoneshow"
+
+# Ajouter l'état des alias
+echo -e "\n## État des Alias\n" >> $report_file
+for alias in $(alishow | grep alias | awk '{print $2}'); do
+    add_section "Détails de l'Alias $alias" "alishow $alias"
+done
+
+# Afficher le rapport
+cat $report_file
+```
+
+Ce script exécute les commandes nécessaires, capture leurs sorties et compile les résultats dans un fichier de rapport structuré, prêt à être présenté.
