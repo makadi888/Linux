@@ -1,0 +1,69 @@
+Pour afficher tous les interfaces d'un Switch Fabric Brocade et vérifier les adresses IP des serveurs connectés, vous pouvez suivre ces étapes générales. Ces étapes supposent que vous avez un accès administratif au switch et aux serveurs.
+
+### Étape 1: Connexion au Switch Fabric Brocade
+
+1. **Connexion en SSH** :
+   - Utilisez un client SSH (comme PuTTY pour Windows ou la commande `ssh` sur un terminal Unix) pour vous connecter au switch.
+   - La commande de base serait :
+     ```sh
+     ssh admin@ip_du_switch
+     ```
+   - Remplacez `admin` par votre nom d'utilisateur administrateur et `ip_du_switch` par l'adresse IP du switch.
+
+### Étape 2: Afficher les Interfaces
+
+2. **Afficher les interfaces** :
+   - Utilisez la commande suivante pour afficher toutes les interfaces du switch :
+     ```sh
+     switchshow
+     ```
+   - Cette commande vous montrera l'état de chaque port du switch (par exemple, en ligne, hors ligne, etc.).
+
+3. **Afficher les détails des interfaces** :
+   - Pour des détails plus spécifiques sur une interface particulière, utilisez :
+     ```sh
+     portshow [port_number]
+     ```
+   - Remplacez `[port_number]` par le numéro du port que vous souhaitez examiner.
+
+### Étape 3: Vérifier les Connexions aux Serveurs
+
+4. **Lister les adresses IP des serveurs** :
+   - Généralement, les serveurs connectés à un switch de stockage (comme Brocade) n'ont pas d'adresses IP gérées par le switch lui-même. Cependant, vous pouvez obtenir des informations sur les serveurs connectés en utilisant des commandes comme :
+     ```sh
+     nsshow
+     ```
+   - Cette commande listera les nœuds dans le fabric, y compris les WWN (World Wide Names) des serveurs et autres périphériques connectés.
+
+5. **Vérifier les adresses IP des serveurs** :
+   - Pour obtenir les adresses IP des serveurs, vous devez vous connecter à chaque serveur individuellement (par SSH ou tout autre moyen de gestion à distance) et vérifier leur configuration réseau.
+   - Par exemple, sur un serveur Linux, vous pouvez utiliser :
+     ```sh
+     ip addr show
+     ```
+   - Sur un serveur Windows, vous pouvez utiliser :
+     ```sh
+     ipconfig
+     ```
+
+### Exemple de Vérification sur un Serveur Linux
+
+```sh
+ssh user@ip_du_serveur
+ip addr show
+```
+
+### Exemple de Vérification sur un Serveur Windows
+
+```sh
+ssh user@ip_du_serveur
+ipconfig
+```
+
+### Remarques
+
+- Assurez-vous d'avoir les privilèges nécessaires pour exécuter ces commandes sur le switch et les serveurs.
+- Vous pouvez automatiser la vérification des adresses IP des serveurs en utilisant des scripts si vous avez beaucoup de serveurs à vérifier.
+- Si les serveurs sont connectés via une infrastructure réseau complexe, des outils de gestion réseau ou de monitoring peuvent être nécessaires pour obtenir une vue d'ensemble des connexions IP.
+
+Cette approche vous aidera à afficher les interfaces du switch Brocade et à vérifier les adresses IP des serveurs connectés.
