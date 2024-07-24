@@ -1,0 +1,48 @@
+Bien sûr ! Voici un playbook Ansible simple qui vérifie si Chrony est installé et, s'il l'est, exécute la commande `chronyc sources`. 
+
+Assurez-vous d'adapter l'inventaire à vos besoins et d'avoir les droits nécessaires pour exécuter les tâches sur les hôtes cibles.
+
+```yaml
+---
+- name: Check and Display Chrony Sources
+  hosts: all
+  become: yes  # This ensures that the tasks are run with elevated privileges
+  tasks:
+    - name: Check if chrony is installed
+      shell: which chronyd
+      register: chrony_check
+      ignore_errors: yes
+
+    - name: Print a message if chrony is not installed
+      debug:
+        msg: "Chrony is not installed on this host."
+      when: chrony_check.rc != 0
+
+    - name: Display chrony sources if chrony is installed
+      shell: chronyc sources
+      register: chrony_sources
+      when: chrony_check.rc == 0
+
+    - name: Show chrony sources output
+      debug:
+        var: chrony_sources.stdout
+      when: chrony_check.rc == 0
+```
+
+### Explications
+
+1. **Check if chrony is installed**: Utilise la commande `which chronyd` pour vérifier si Chrony est installé. Le résultat est stocké dans la variable `chrony_check`.
+
+2. **Print a message if chrony is not installed**: Si Chrony n'est pas installé (`chrony_check.rc != 0`), un message est affiché pour indiquer cela.
+
+3. **Display chrony sources if chrony is installed**: Si Chrony est installé (`chrony_check.rc == 0`), la commande `chronyc sources` est exécutée et son résultat est stocké dans la variable `chrony_sources`.
+
+4. **Show chrony sources output**: Le résultat de la commande `chronyc sources` est affiché en utilisant le module `debug`.
+
+Pour exécuter ce playbook, enregistrez-le dans un fichier nommé par exemple `check_chrony.yml`, et lancez la commande suivante :
+
+```sh
+ansible-playbook -i your_inventory_file check_chrony.yml
+```
+
+Assurez-vous que votre fichier d'inventaire (`your_inventory_file`) contient les hôtes sur lesquels vous voulez exécuter ce playbook.
