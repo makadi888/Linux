@@ -1,0 +1,37 @@
+---
+- name: Change IP addresses and gateways on Ubuntu servers
+  hosts: ubuntu_servers
+  become: yes
+  vars:
+    network_interfaces:
+      - name: ens33
+        address: 192.168.1.100
+        netmask: 255.255.255.0
+        gateway: 192.168.1.1
+      - name: ens34
+        address: 10.0.0.100
+        netmask: 255.255.255.0
+        gateway: 10.0.0.1
+
+  tasks:
+    - name: Configure network interfaces
+      copy:
+        dest: /etc/netplan/01-netcfg.yaml
+        content: |
+          network:
+            version: 2
+            ethernets:
+              {% for iface in network_interfaces %}
+              {{ iface.name }}:
+                dhcp4: no
+                addresses:
+                  - {{ iface.address }}/24
+                gateway4: {{ iface.gateway }}
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+              {% endfor %}
+
+    - name: Apply netplan configuration
+      command: netplan apply
