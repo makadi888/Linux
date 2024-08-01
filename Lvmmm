@@ -1,0 +1,106 @@
+Pour ajouter un nouveau disque à un système Ubuntu en utilisant LVM (Logical Volume Manager), vous pouvez suivre ces étapes :
+
+1. **Vérifiez la présence du nouveau disque** : Après avoir ajouté le disque physiquement à votre machine, vous devez vérifier que le système l’a détecté.
+    ```bash
+    sudo fdisk -l
+    ```
+
+2. **Initialisez le disque pour LVM** :
+    Supposons que le nouveau disque est identifié comme `/dev/sdb`.
+
+    ```bash
+    sudo pvcreate /dev/sdb
+    ```
+
+3. **Ajoutez le disque au groupe de volumes (VG)** :
+    Supposons que le groupe de volumes existant s'appelle `vg0`.
+
+    ```bash
+    sudo vgextend vg0 /dev/sdb
+    ```
+
+4. **Étendez le volume logique (LV)** :
+    Si vous souhaitez étendre un volume logique existant, supposons que celui-ci s'appelle `lv0`.
+
+    ```bash
+    sudo lvextend -l +100%FREE /dev/vg0/lv0
+    ```
+
+5. **Redimensionnez le système de fichiers** :
+    Selon le système de fichiers que vous utilisez, la commande peut varier. Pour un système de fichiers ext4, par exemple :
+
+    ```bash
+    sudo resize2fs /dev/vg0/lv0
+    ```
+
+### Étapes détaillées avec explications
+
+1. **Vérification du nouveau disque** :
+    ```bash
+    sudo fdisk -l
+    ```
+    Vous devriez voir quelque chose comme `/dev/sdb` (ou autre nom, si votre disque a un autre nom).
+
+2. **Initialisation du disque pour LVM** :
+    ```bash
+    sudo pvcreate /dev/sdb
+    ```
+    Cela initialise le disque pour être utilisé par LVM.
+
+3. **Ajout du disque au groupe de volumes existant** :
+    ```bash
+    sudo vgextend vg0 /dev/sdb
+    ```
+    Cette commande ajoute le disque nouvellement initialisé au groupe de volumes `vg0`.
+
+4. **Extension du volume logique** :
+    ```bash
+    sudo lvextend -l +100%FREE /dev/vg0/lv0
+    ```
+    Cette commande étend le volume logique `lv0` pour utiliser tout l'espace libre disponible dans le groupe de volumes `vg0`.
+
+5. **Redimensionnement du système de fichiers** :
+    ```bash
+    sudo resize2fs /dev/vg0/lv0
+    ```
+    Cette commande redimensionne le système de fichiers pour qu'il utilise tout l'espace nouvellement alloué. Si vous utilisez un autre système de fichiers comme XFS, vous utiliserez `xfs_growfs` au lieu de `resize2fs` :
+
+    ```bash
+    sudo xfs_growfs /dev/vg0/lv0
+    ```
+
+### Exemple complet :
+
+Voici un exemple complet des commandes, en supposant un disque ajouté nommé `/dev/sdb` et un volume logique nommé `lv0` dans le groupe de volumes `vg0` :
+
+1. Vérifiez le disque :
+    ```bash
+    sudo fdisk -l
+    ```
+
+2. Initialisez le disque :
+    ```bash
+    sudo pvcreate /dev/sdb
+    ```
+
+3. Ajoutez le disque au VG :
+    ```bash
+    sudo vgextend vg0 /dev/sdb
+    ```
+
+4. Étendez le LV :
+    ```bash
+    sudo lvextend -l +100%FREE /dev/vg0/lv0
+    ```
+
+5. Redimensionnez le système de fichiers (pour ext4) :
+    ```bash
+    sudo resize2fs /dev/vg0/lv0
+    ```
+
+Pour un système de fichiers XFS :
+    ```bash
+    sudo xfs_growfs /dev/vg0/lv0
+    ```
+
+Ces commandes vous permettront d'ajouter un nouveau disque et d'étendre un volume logique existant en utilisant LVM sur Ubuntu.
