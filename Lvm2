@@ -1,0 +1,84 @@
+lvm2
+
+Pour ajouter un nouveau disque LVM et monter ce disque sur un répertoire existant `/data` sous Ubuntu, vous pouvez suivre ces étapes :
+
+### 1. Ajouter le nouveau disque à votre système
+
+Connectez le nouveau disque à votre machine. Il sera probablement détecté comme `/dev/sdb` (ou un autre identifiant comme `/dev/sdc`, etc.).
+
+### 2. Initialiser le disque pour LVM
+
+#### a. Créez une nouvelle partition LVM sur le disque :
+```bash
+sudo fdisk /dev/sdb
+```
+Dans `fdisk` :
+- Tapez `n` pour créer une nouvelle partition.
+- Acceptez les valeurs par défaut pour utiliser tout l'espace disque.
+- Tapez `t` pour définir le type de partition.
+- Entrez `8e` pour définir le type LVM.
+- Tapez `w` pour écrire les modifications et quitter.
+
+#### b. Initialisez le disque pour LVM :
+```bash
+sudo pvcreate /dev/sdb1
+```
+
+### 3. Créer un groupe de volumes
+
+Si vous avez déjà un groupe de volumes existant, passez à l'étape suivante. Sinon, créez un groupe de volumes :
+```bash
+sudo vgcreate vg_data /dev/sdb1
+```
+
+### 4. Créer un volume logique
+
+Ajoutez un volume logique à partir du groupe de volumes :
+```bash
+sudo lvcreate -n lv_data -l 100%FREE vg_data
+```
+
+### 5. Formater le volume logique
+
+Formatez le volume logique avec un système de fichiers, par exemple ext4 :
+```bash
+sudo mkfs.ext4 /dev/vg_data/lv_data
+```
+
+### 6. Monter le volume logique
+
+#### a. Créez un point de montage, si nécessaire (mais dans ce cas, `/data` existe déjà) :
+```bash
+sudo mkdir -p /data
+```
+
+#### b. Montez le volume logique sur `/data` :
+```bash
+sudo mount /dev/vg_data/lv_data /data
+```
+
+### 7. Mettre à jour `/etc/fstab`
+
+Pour que le montage soit persistant après redémarrage, ajoutez une entrée à `/etc/fstab` :
+```bash
+sudo nano /etc/fstab
+```
+
+Ajoutez la ligne suivante à la fin du fichier :
+```
+/dev/vg_data/lv_data /data ext4 defaults 0 2
+```
+
+### 8. Vérifiez le montage
+
+Vérifiez que tout est monté correctement :
+```bash
+sudo mount -a
+df -h
+```
+
+Vous devriez voir le nouveau volume logique monté sur `/data`.
+
+### Remarque
+
+Si `/data` contient déjà des données, il est important de sauvegarder ces données avant de suivre ces étapes, car formater et monter un nouveau système de fichiers peut écraser les données existantes.
