@@ -1,0 +1,73 @@
+Pour ajouter un nouveau disque à une machine virtuelle Ubuntu sous VMware et le configurer avec LVM pour le monter sur le répertoire `/DATA`, suivez ces étapes :
+
+### Étapes VMware
+
+1. **Ajouter le nouveau disque virtuel à la VM** :
+   - Éteignez la machine virtuelle si elle est en cours d'exécution.
+   - Accédez aux paramètres de la VM.
+   - Ajoutez un nouveau disque dur virtuel via l'interface de VMware.
+   - Démarrez la VM.
+
+### Étapes dans Ubuntu
+
+2. **Détecter le nouveau disque** :
+   Une fois la VM démarrée, vérifiez que le nouveau disque est détecté :
+   ```bash
+   sudo fdisk -l
+   ```
+   Vous devriez voir un nouveau disque, par exemple `/dev/sdb`.
+
+3. **Initialiser le disque pour LVM** :
+   Si le disque est neuf, créez une table de partition :
+   ```bash
+   sudo parted /dev/sdb
+   (parted) mklabel gpt
+   (parted) mkpart primary 0% 100%
+   (parted) quit
+   ```
+
+4. **Créer un Physical Volume (PV)** :
+   ```bash
+   sudo pvcreate /dev/sdb1
+   ```
+
+5. **Créer un Volume Group (VG)** :
+   ```bash
+   sudo vgcreate myvg /dev/sdb1
+   ```
+
+6. **Créer un Logical Volume (LV)** :
+   ```bash
+   sudo lvcreate -l 100%FREE -n mylv myvg
+   ```
+
+7. **Formater le LV avec un système de fichiers** :
+   ```bash
+   sudo mkfs.ext4 /dev/myvg/mylv
+   ```
+
+8. **Monter le Logical Volume sur `/DATA`** :
+   Assurez-vous que le répertoire `/DATA` est vide ou que les données existantes sont sauvegardées, car le montage masquera les fichiers existants dans `/DATA`.
+
+   ```bash
+   sudo mount /dev/myvg/mylv /DATA
+   ```
+
+9. **Mettre à jour le fichier `/etc/fstab` pour le montage automatique** :
+   Ouvrez le fichier `/etc/fstab` avec un éditeur de texte :
+   ```bash
+   sudo nano /etc/fstab
+   ```
+   Ajoutez la ligne suivante :
+   ```fstab
+   /dev/myvg/mylv  /DATA  ext4  defaults  0  2
+   ```
+
+10. **Vérifiez le montage** :
+    Vous pouvez vérifier que tout fonctionne correctement en utilisant les commandes suivantes :
+    ```bash
+    sudo mount -a
+    df -h
+    ```
+
+Ces commandes devraient montrer que le Logical Volume est correctement monté sur `/DATA`. Vous avez maintenant un nouveau disque configuré avec LVM sur votre VM Ubuntu sous VMware et monté sur le répertoire `/DATA`.
