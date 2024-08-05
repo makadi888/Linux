@@ -1,0 +1,71 @@
+Pour donner accès en lecture seule à deux utilisateurs à un répertoire spécifique sur CentOS, suivez ces étapes :
+
+### 1. Créer les utilisateurs
+Si les utilisateurs n'existent pas encore, vous pouvez les créer avec les commandes suivantes :
+```bash
+sudo useradd user1
+sudo useradd user2
+```
+
+### 2. Créer le groupe
+Créez un groupe auquel les deux utilisateurs appartiendront :
+```bash
+sudo groupadd readonlygroup
+```
+
+### 3. Ajouter les utilisateurs au groupe
+Ajoutez les utilisateurs au groupe nouvellement créé :
+```bash
+sudo usermod -aG readonlygroup user1
+sudo usermod -aG readonlygroup user2
+```
+
+### 4. Définir les permissions du répertoire
+Définissez les permissions du répertoire pour que seul le groupe ait accès en lecture :
+```bash
+sudo chown -R root:readonlygroup /chemin/vers/repertoire
+sudo chmod -R 750 /chemin/vers/repertoire
+```
+
+### 5. Configurer les permissions de lecture seule pour le groupe
+Modifiez les permissions pour que le groupe ait uniquement accès en lecture et exécution :
+```bash
+sudo chmod -R 750 /chemin/vers/repertoire
+sudo chmod g+w /chemin/vers/repertoire
+```
+
+### 6. Tester les permissions
+Pour vérifier que les utilisateurs ont les bonnes permissions, vous pouvez vous connecter en tant que chaque utilisateur et essayer d'accéder au répertoire :
+```bash
+su - user1
+ls /chemin/vers/repertoire
+su - user2
+ls /chemin/vers/repertoire
+```
+
+### Note :
+Les commandes ci-dessus partent du principe que le répertoire `/chemin/vers/repertoire` est déjà existant et qu'il est souhaité que seul le groupe `readonlygroup` puisse lire les fichiers.
+
+### Exemple complet des commandes :
+
+```bash
+# Création des utilisateurs
+sudo useradd user1
+sudo useradd user2
+
+# Création du groupe
+sudo groupadd readonlygroup
+
+# Ajout des utilisateurs au groupe
+sudo usermod -aG readonlygroup user1
+sudo usermod -aG readonlygroup user2
+
+# Changement du groupe propriétaire du répertoire
+sudo chown -R root:readonlygroup /chemin/vers/repertoire
+
+# Définition des permissions
+sudo chmod -R 750 /chemin/vers/repertoire
+sudo chmod g-w /chemin/vers/repertoire
+```
+
+Cela devrait garantir que les utilisateurs `user1` et `user2` ont un accès en lecture seule au répertoire spécifié.
