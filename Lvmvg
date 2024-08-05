@@ -1,0 +1,87 @@
+Pour ajouter un nouveau disque et configurer LVM (Logical Volume Manager) pour le monter sur `/data` sur Ubuntu, en supposant que vous avez déjà un volume groupe (VG) existant, suivez ces étapes :
+
+1. **Identifier le nouveau disque** :
+   Utilisez la commande `lsblk` pour lister tous les disques et identifier le nouveau disque (par exemple, `/dev/sdb`).
+
+   ```sh
+   lsblk
+   ```
+
+2. **Partitionner le disque** :
+   Utilisez `fdisk` ou `parted` pour créer une partition sur le nouveau disque. Voici un exemple avec `fdisk` :
+
+   ```sh
+   sudo fdisk /dev/sdb
+   ```
+
+   Dans `fdisk`, utilisez les commandes suivantes :
+   - `n` pour créer une nouvelle partition
+   - `p` pour la définir comme partition principale
+   - `1` pour la première partition
+   - `t` pour définir le type de partition, choisissez `8e` pour LVM
+   - `w` pour écrire les modifications et quitter
+
+3. **Créer un volume physique (PV) sur le nouveau disque** :
+   Utilisez la commande `pvcreate` pour créer un PV.
+
+   ```sh
+   sudo pvcreate /dev/sdb1
+   ```
+
+4. **Ajouter le nouveau PV au volume groupe (VG) existant** :
+   Utilisez la commande `vgextend` pour ajouter le PV au VG.
+
+   ```sh
+   sudo vgextend <nom_du_vg> /dev/sdb1
+   ```
+
+5. **Créer un volume logique (LV)** :
+   Utilisez la commande `lvcreate` pour créer un LV dans le VG avec la taille souhaitée (par exemple, 100G).
+
+   ```sh
+   sudo lvcreate -L 100G -n <nom_du_lv> <nom_du_vg>
+   ```
+
+6. **Formater le LV avec un système de fichiers** :
+   Utilisez `mkfs` pour formater le LV (par exemple, avec ext4).
+
+   ```sh
+   sudo mkfs.ext4 /dev/<nom_du_vg>/<nom_du_lv>
+   ```
+
+7. **Créer un point de montage** :
+   Créez le répertoire où vous allez monter le LV.
+
+   ```sh
+   sudo mkdir -p /data
+   ```
+
+8. **Monter le LV** :
+   Utilisez la commande `mount` pour monter le LV sur `/data`.
+
+   ```sh
+   sudo mount /dev/<nom_du_vg>/<nom_du_lv> /data
+   ```
+
+9. **Mettre à jour `fstab` pour un montage automatique au démarrage** :
+   Éditez le fichier `/etc/fstab` et ajoutez une ligne pour monter automatiquement le LV.
+
+   ```sh
+   sudo nano /etc/fstab
+   ```
+
+   Ajoutez la ligne suivante :
+
+   ```sh
+   /dev/<nom_du_vg>/<nom_du_lv> /data ext4 defaults 0 2
+   ```
+
+10. **Vérifier le montage** :
+    Démontez et remontez pour vérifier que tout fonctionne correctement.
+
+    ```sh
+    sudo umount /data
+    sudo mount -a
+    ```
+
+En remplaçant `<nom_du_vg>` et `<nom_du_lv>` par les noms appropriés de votre volume groupe et volume logique respectivement, vous aurez ajouté un nouveau disque, configuré LVM, et monté le nouveau volume sur `/data`.
