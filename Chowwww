@@ -1,0 +1,95 @@
+Pour donner à un utilisateur un accès en lecture seule à tous les documents sur tous les serveurs, il faut suivre une approche systématique pour chaque serveur et chaque répertoire de documents. Voici une méthode généralisée pour y parvenir :
+
+### Étape 1 : Créer un utilisateur sur chaque serveur
+
+Connectez-vous à chaque serveur et exécutez les commandes suivantes pour créer un nouvel utilisateur avec un mot de passe :
+
+```sh
+sudo adduser nouvel_utilisateur
+sudo passwd nouvel_utilisateur
+```
+
+### Étape 2 : Créer un groupe de lecture seule (optionnel)
+
+Si vous souhaitez utiliser un groupe pour gérer les permissions, créez un groupe sur chaque serveur :
+
+```sh
+sudo groupadd lecture_seule
+```
+
+Ajoutez l'utilisateur au groupe :
+
+```sh
+sudo usermod -aG lecture_seule nouvel_utilisateur
+```
+
+### Étape 3 : Définir les permissions sur tous les documents
+
+Pour donner des droits de lecture seule sur tous les documents à l'utilisateur ou au groupe sur chaque serveur, vous pouvez utiliser les commandes `chown` et `chmod`.
+
+#### 3.1 Modifier les permissions de manière récursive
+
+Pour accorder l'accès en lecture seule à tous les fichiers et répertoires sur chaque serveur, vous devez changer les permissions de manière récursive à partir de la racine ou d'un répertoire spécifique où sont stockés les documents. Voici comment procéder :
+
+```sh
+sudo chown -R root:lecture_seule /path/to/documents
+sudo chmod -R 750 /path/to/documents
+```
+
+Si vous utilisez directement l'utilisateur sans groupe :
+
+```sh
+sudo chown -R root:nouvel_utilisateur /path/to/documents
+sudo chmod -R 750 /path/to/documents
+```
+
+#### 3.2 Accorder des permissions de lecture à tous les fichiers et répertoires
+
+Pour changer les permissions de tout le système de fichiers, soyez prudent car cela peut affecter le fonctionnement du système. Voici une commande pour ajuster les permissions dans un répertoire spécifique contenant les documents :
+
+```sh
+sudo find /path/to/documents -type d -exec chmod 750 {} \;
+sudo find /path/to/documents -type f -exec chmod 640 {} \;
+```
+
+### Étape 4 : Automatiser sur tous les serveurs
+
+Pour appliquer ces changements sur tous les serveurs, vous pouvez écrire un script et l'exécuter sur chaque serveur. Voici un exemple de script bash :
+
+```bash
+#!/bin/bash
+
+# Variables
+USER="nouvel_utilisateur"
+GROUP="lecture_seule"
+DOC_PATH="/path/to/documents"
+
+# Créer l'utilisateur
+sudo adduser $USER
+sudo passwd $USER
+
+# Créer le groupe et ajouter l'utilisateur au groupe
+sudo groupadd $GROUP
+sudo usermod -aG $GROUP $USER
+
+# Modifier les permissions
+sudo chown -R root:$GROUP $DOC_PATH
+sudo find $DOC_PATH -type d -exec chmod 750 {} \;
+sudo find $DOC_PATH -type f -exec chmod 640 {} \;
+```
+
+Enregistrez ce script dans un fichier, par exemple `setup_readonly_user.sh`, et exécutez-le sur chaque serveur :
+
+```sh
+sudo bash setup_readonly_user.sh
+```
+
+### Remarques
+
+1. **Sécurité** : Soyez très prudent lorsque vous changez les permissions des fichiers, surtout si vous le faites de manière récursive à partir de la racine (`/`). Cela peut affecter la sécurité et le fonctionnement du système.
+   
+2. **Backup** : Avant d'appliquer ces changements, il est conseillé de faire une sauvegarde des permissions actuelles et des fichiers importants.
+
+3. **Test** : Testez toujours sur un petit échantillon de fichiers et répertoires avant d'appliquer des changements à grande échelle.
+
+Ces étapes devraient vous aider à configurer un accès en lecture seule pour un utilisateur sur tous les documents de vos serveurs CentOS.
