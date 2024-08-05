@@ -1,0 +1,99 @@
+Pour ajouter un nouveau groupe de volumes (VG) et un nouveau volume logique (LV) avec LVM sur Ubuntu, suivez les étapes suivantes :
+
+1. **Vérifiez la présence du nouveau disque** :
+    ```bash
+    sudo fdisk -l
+    ```
+    Identifiez le disque. Supposons qu'il s'appelle `/dev/sdb`.
+
+2. **Initialisez le disque pour LVM** :
+    ```bash
+    sudo pvcreate /dev/sdb
+    ```
+
+3. **Créez un nouveau groupe de volumes (VG)** :
+    Supposons que vous voulez nommer le nouveau groupe de volumes `vg1`.
+
+    ```bash
+    sudo vgcreate vg1 /dev/sdb
+    ```
+
+4. **Créez un nouveau volume logique (LV)** :
+    Supposons que vous voulez nommer le volume logique `lv1` et allouer tout l'espace disponible sur `vg1`.
+
+    ```bash
+    sudo lvcreate -n lv1 -l 100%FREE vg1
+    ```
+
+5. **Formatez le volume logique avec un système de fichiers** :
+    Supposons que vous voulez utiliser le système de fichiers ext4.
+
+    ```bash
+    sudo mkfs.ext4 /dev/vg1/lv1
+    ```
+
+6. **Montez le nouveau volume logique** :
+    Créez un point de montage et montez le volume logique.
+
+    ```bash
+    sudo mkdir /mnt/new_lv
+    sudo mount /dev/vg1/lv1 /mnt/new_lv
+    ```
+
+7. **Mettre à jour le fichier `/etc/fstab` pour un montage automatique au démarrage** :
+    Ouvrez `/etc/fstab` avec un éditeur de texte (par exemple, nano) :
+
+    ```bash
+    sudo nano /etc/fstab
+    ```
+
+    Ajoutez la ligne suivante pour monter automatiquement le volume logique au démarrage :
+
+    ```
+    /dev/vg1/lv1 /mnt/new_lv ext4 defaults 0 2
+    ```
+
+### Exemple complet :
+
+1. **Vérifiez le disque** :
+    ```bash
+    sudo fdisk -l
+    ```
+
+2. **Initialisez le disque** :
+    ```bash
+    sudo pvcreate /dev/sdb
+    ```
+
+3. **Créez le VG** :
+    ```bash
+    sudo vgcreate vg1 /dev/sdb
+    ```
+
+4. **Créez le LV** :
+    ```bash
+    sudo lvcreate -n lv1 -l 100%FREE vg1
+    ```
+
+5. **Formatez le LV** :
+    ```bash
+    sudo mkfs.ext4 /dev/vg1/lv1
+    ```
+
+6. **Montez le LV** :
+    ```bash
+    sudo mkdir /mnt/new_lv
+    sudo mount /dev/vg1/lv1 /mnt/new_lv
+    ```
+
+7. **Mettre à jour `/etc/fstab`** :
+    ```bash
+    sudo nano /etc/fstab
+    ```
+
+    Ajoutez la ligne :
+    ```
+    /dev/vg1/lv1 /mnt/new_lv ext4 defaults 0 2
+    ```
+
+Ces étapes vous guideront pour ajouter un nouveau disque, créer un nouveau groupe de volumes et un nouveau volume logique, puis les monter sur Ubuntu en utilisant LVM.
