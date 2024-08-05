@@ -1,0 +1,70 @@
+Pour donner à un utilisateur spécifique un accès en lecture seule à un répertoire sur une machine CentOS, vous pouvez utiliser les permissions de fichiers et les groupes UNIX. Voici les étapes pour y parvenir :
+
+1. **Créer un groupe spécifique pour l'accès en lecture seule** (si ce groupe n'existe pas déjà).
+2. **Ajouter l'utilisateur au groupe**.
+3. **Définir les permissions du répertoire pour que ce groupe ait accès en lecture seule**.
+
+### Étapes détaillées
+
+#### 1. Créer un groupe
+Créez un groupe dédié pour les utilisateurs qui doivent avoir un accès en lecture seule au répertoire.
+
+```sh
+sudo groupadd readonlygroup
+```
+
+#### 2. Ajouter l'utilisateur au groupe
+Ajoutez l'utilisateur au groupe nouvellement créé.
+
+```sh
+sudo usermod -aG readonlygroup username
+```
+
+Remplacez `username` par le nom de l'utilisateur cible.
+
+#### 3. Définir les permissions du répertoire
+Définissez les permissions du répertoire pour que le groupe `readonlygroup` ait accès en lecture seule.
+
+```sh
+sudo chown -R root:readonlygroup /path/to/directory
+sudo chmod -R 750 /path/to/directory
+```
+
+Voici ce que font ces commandes :
+- `chown -R root:readonlygroup /path/to/directory` : change le groupe propriétaire du répertoire et de tous ses fichiers et sous-répertoires en `readonlygroup`.
+- `chmod -R 750 /path/to/directory` : définit les permissions de lecture, écriture et exécution pour le propriétaire (`root`), et de lecture et exécution pour le groupe (`readonlygroup`). Les autres utilisateurs n'ont aucun accès.
+
+Pour accorder uniquement l'accès en lecture (sans exécution), vous pouvez utiliser :
+
+```sh
+sudo chmod -R 740 /path/to/directory
+```
+
+Mais cela pourrait empêcher l'accès aux sous-répertoires. Donc, généralement, l'accès en lecture et exécution (750) est recommandé pour permettre la navigation dans les répertoires.
+
+### Vérification
+Pour vérifier que les permissions ont été correctement appliquées, utilisez la commande `ls -l` :
+
+```sh
+ls -l /path/to/directory
+```
+
+Vous devriez voir que le groupe est `readonlygroup` et les permissions sont `750` ou `740`.
+
+### Exemple complet
+
+Voici un exemple complet de toutes les commandes combinées :
+
+```sh
+# Créer le groupe readonlygroup
+sudo groupadd readonlygroup
+
+# Ajouter l'utilisateur username au groupe readonlygroup
+sudo usermod -aG readonlygroup username
+
+# Changer le groupe propriétaire du répertoire et définir les permissions
+sudo chown -R root:readonlygroup /path/to/directory
+sudo chmod -R 750 /path/to/directory
+```
+
+En suivant ces étapes, l'utilisateur spécifié aura un accès en lecture seule au répertoire désigné sur une machine CentOS.
