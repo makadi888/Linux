@@ -1,0 +1,82 @@
+Bien sûr ! Voici les commandes pour installer `xrdp`, `GNOME`, `Eclipse`, et `OpenJDK 21` sur une VM Ubuntu.
+
+### 1. Mettre à jour la liste des paquets
+```bash
+sudo apt update
+```
+
+### 2. Installer xrdp
+```bash
+sudo apt install -y xrdp
+```
+
+### 3. Installer GNOME Desktop
+```bash
+sudo apt install -y ubuntu-desktop
+```
+
+### 4. Ajouter le dépôt pour OpenJDK 21
+```bash
+sudo add-apt-repository -y ppa:openjdk-r/ppa
+sudo apt update
+```
+
+### 5. Installer OpenJDK 21
+```bash
+sudo apt install -y openjdk-21-jdk
+```
+
+### 6. Installer wget et tar (si non installés)
+```bash
+sudo apt install -y wget tar
+```
+
+### 7. Télécharger Eclipse
+```bash
+wget -O /tmp/eclipse.tar.gz https://ftp.osuosl.org/pub/eclipse/technology/epp/downloads/release/2023-06/R/eclipse-java-2023-06-R-linux-gtk-x86_64.tar.gz
+```
+
+### 8. Extraire Eclipse
+```bash
+sudo tar -xzf /tmp/eclipse.tar.gz -C /opt/
+```
+
+### 9. Créer un lien symbolique pour Eclipse
+```bash
+sudo ln -s /opt/eclipse/eclipse /usr/local/bin/eclipse
+```
+
+### 10. Créer un fichier .desktop pour Eclipse
+```bash
+sudo tee /usr/share/applications/eclipse.desktop > /dev/null <<EOF
+[Desktop Entry]
+Name=Eclipse IDE
+Type=Application
+Exec=/opt/eclipse/eclipse
+Terminal=false
+Icon=/opt/eclipse/icon.xpm
+Comment=Integrated Development Environment
+NoDisplay=false
+Categories=Development;IDE;
+EOF
+```
+
+### 11. Configurer xrdp pour utiliser GNOME
+Modifiez le script de démarrage de xrdp pour qu'il utilise GNOME :
+
+```bash
+sudo sed -i 's/^#.*startgnome-session/startgnome-session/' /etc/xrdp/startwm.sh
+```
+
+### 12. Redémarrer le service xrdp
+```bash
+sudo systemctl restart xrdp
+```
+
+### 13. Nettoyer les fichiers temporaires
+```bash
+rm /tmp/eclipse.tar.gz
+```
+
+### Résumé
+Ces commandes installent et configurent tout le nécessaire pour accéder à une session GNOME via `xrdp`, utiliser `Eclipse` comme IDE, et compiler des applications Java avec `OpenJDK 21`.
