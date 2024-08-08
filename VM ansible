@@ -1,0 +1,82 @@
+Pas de problème ! Voici le playbook Ansible mis à jour pour installer `OpenJDK 21` au lieu de `OpenJDK 11` :
+
+```yaml
+---
+- name: Installer xrdb, xorg, et Eclipse sur une VM Ubuntu
+  hosts: vm_ubuntu  # Le nom d'hôte doit correspondre à votre inventaire Ansible
+  become: yes  # Exécute les commandes avec des privilèges root
+
+  tasks:
+    - name: Mettre à jour le cache APT
+      apt:
+        update_cache: yes
+
+    - name: Installer xrdb et xorg
+      apt:
+        name:
+          - xrdb
+          - xorg
+        state: present
+
+    - name: Ajouter le dépôt pour OpenJDK 21
+      apt_repository:
+        repo: ppa:openjdk-r/ppa
+        state: present
+
+    - name: Installer les dépendances pour Eclipse
+      apt:
+        name:
+          - openjdk-21-jdk  # Remplacé par OpenJDK 21
+          - wget
+          - tar
+        state: present
+
+    - name: Télécharger Eclipse
+      command: wget -O /tmp/eclipse.tar.gz https://ftp.osuosl.org/pub/eclipse/technology/epp/downloads/release/2023-06/R/eclipse-java-2023-06-R-linux-gtk-x86_64.tar.gz
+      args:
+        creates: /tmp/eclipse.tar.gz
+
+    - name: Extraire Eclipse
+      unarchive:
+        src: /tmp/eclipse.tar.gz
+        dest: /opt/
+        remote_src: yes
+
+    - name: Créer un lien symbolique pour Eclipse
+      file:
+        src: /opt/eclipse/eclipse
+        dest: /usr/local/bin/eclipse
+        state: link
+
+    - name: Créer un fichier .desktop pour Eclipse
+      copy:
+        dest: /usr/share/applications/eclipse.desktop
+        content: |
+          [Desktop Entry]
+          Name=Eclipse IDE
+          Type=Application
+          Exec=/opt/eclipse/eclipse
+          Terminal=false
+          Icon=/opt/eclipse/icon.xpm
+          Comment=Integrated Development Environment
+          NoDisplay=false
+          Categories=Development;IDE;
+          Name[en]=eclipse.desktop
+
+    - name: Nettoyer les fichiers temporaires
+      file:
+        path: /tmp/eclipse.tar.gz
+        state: absent
+```
+
+### Modifications :
+- **OpenJDK 21** : Le dépôt `ppa:openjdk-r/ppa` est ajouté pour accéder à OpenJDK 21, et la dépendance `openjdk-21-jdk` est utilisée pour installer Java 21.
+
+### Exécution
+Enregistrez ce playbook dans un fichier nommé `install_eclipse.yml` et exécutez-le avec la commande :
+
+```bash
+ansible-playbook -i inventaire_vm install_eclipse.yml
+```
+
+Cela installera `xrdb`, `xorg`, `OpenJDK 21`, et Eclipse sur votre VM Ubuntu.
