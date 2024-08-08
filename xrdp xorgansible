@@ -1,0 +1,89 @@
+---
+- name: Installer xrdp, GNOME, Eclipse, et OpenJDK 21 sur une VM Ubuntu
+  hosts: vm_ubuntu  # Nom d'hôte dans votre inventaire Ansible
+  become: yes  # Exécute les commandes avec des privilèges root
+
+  tasks:
+    - name: Mettre à jour le cache APT
+      apt:
+        update_cache: yes
+
+    - name: Installer xrdp
+      apt:
+        name: xrdp
+        state: present
+
+    - name: Installer GNOME Desktop
+      apt:
+        name: ubuntu-desktop
+        state: present
+
+    - name: Ajouter le dépôt pour OpenJDK 21
+      apt_repository:
+        repo: ppa:openjdk-r/ppa
+        state: present
+
+    - name: Installer OpenJDK 21
+      apt:
+        name: openjdk-21-jdk
+        state: present
+
+    - name: Installer wget et tar
+      apt:
+        name:
+          - wget
+          - tar
+        state: present
+
+    - name: Télécharger Eclipse
+      command: wget -O /tmp/eclipse.tar.gz https://ftp.osuosl.org/pub/eclipse/technology/epp/downloads/release/2023-06/R/eclipse-java-2023-06-R-linux-gtk-x86_64.tar.gz
+      args:
+        creates: /tmp/eclipse.tar.gz
+
+    - name: Extraire Eclipse
+      unarchive:
+        src: /tmp/eclipse.tar.gz
+        dest: /opt/
+        remote_src: yes
+
+    - name: Créer un lien symbolique pour Eclipse
+      file:
+        src: /opt/eclipse/eclipse
+        dest: /usr/local/bin/eclipse
+        state: link
+
+    - name: Créer un fichier .desktop pour Eclipse
+      copy:
+        dest: /usr/share/applications/eclipse.desktop
+        content: |
+          [Desktop Entry]
+          Name=Eclipse IDE
+          Type=Application
+          Exec=/opt/eclipse/eclipse
+          Terminal=false
+          Icon=/opt/eclipse/icon.xpm
+          Comment=Integrated Development Environment
+          NoDisplay=false
+          Categories=Development;IDE;
+          Name[en]=eclipse.desktop
+
+    - name: Configurer xrdp pour utiliser GNOME
+      copy:
+        dest: /etc/xrdp/startwm.sh
+        content: |
+          #!/bin/sh
+          if [ -r /etc/default/locale ]; then
+            . /etc/default/locale
+            export LANG LANGUAGE
+          fi
+          startgnome-session
+
+    - name: Redémarrer le service xrdp
+      service:
+        name: xrdp
+        state: restarted
+
+    - name: Nettoyer les fichiers temporaires
+      file:
+        path: /tmp/eclipse.tar.gz
+        state: absent
