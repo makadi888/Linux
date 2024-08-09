@@ -1,0 +1,116 @@
+Voici toutes les commandes nécessaires pour désinstaller l'ancienne version d'Eclipse, installer Spring Tool Suite (STS), et configurer XRDP sur Ubuntu. 
+
+### 1. Désinstallation de l'ancienne version d'Eclipse
+
+Si Eclipse est installé dans `/opt/eclipse` :
+```bash
+sudo rm -rf /opt/eclipse
+```
+
+Si Eclipse est installé dans votre répertoire personnel :
+```bash
+rm -rf ~/eclipse
+```
+
+Supprimer les fichiers de configuration associés :
+```bash
+rm -rf ~/.eclipse/
+rm -rf ~/.p2/
+```
+
+Supprimer l'ancien lanceur d'Eclipse :
+```bash
+sudo rm /usr/share/applications/eclipse.desktop
+```
+
+### 2. Installation de Spring Tool Suite (STS)
+
+#### a) Installer le JDK (si ce n'est pas déjà fait)
+```bash
+sudo apt update
+sudo apt install openjdk-17-jdk
+```
+
+#### b) Télécharger STS
+Téléchargez STS depuis le site officiel [Spring Tool Suite](https://spring.io/tools) et enregistrez le fichier dans votre répertoire de téléchargement.
+
+#### c) Extraire et installer STS
+Remplacez `spring-tool-suite-x.y.z.RELEASE-e4.x-linux.gtk.x86_64.tar.gz` par le nom exact du fichier téléchargé :
+```bash
+cd ~/Downloads
+tar -xvzf spring-tool-suite-x.y.z.RELEASE-e4.x-linux.gtk.x86_64.tar.gz
+sudo mv sts-bundle /opt/
+sudo ln -s /opt/sts-bundle/sts /usr/local/bin/sts
+```
+
+#### d) Créer un lanceur STS
+```bash
+sudo nano /usr/share/applications/sts.desktop
+```
+Ajoutez ce contenu dans l'éditeur :
+```plaintext
+[Desktop Entry]
+Name=Spring Tool Suite
+Type=Application
+Exec=/opt/sts-bundle/sts
+Terminal=false
+Icon=/opt/sts-bundle/icon.xpm
+Comment=Spring Tool Suite IDE
+NoDisplay=false
+Categories=Development;IDE;
+Name[en]=Spring Tool Suite
+```
+Enregistrez (Ctrl+O), puis fermez (Ctrl+X) l'éditeur.
+
+### 3. Configuration de XRDP
+
+#### a) Installer XRDP et XFCE
+```bash
+sudo apt update
+sudo apt install xrdp xfce4 xfce4-goodies
+```
+
+#### b) Configurer XRDP pour utiliser XFCE
+```bash
+echo xfce4-session > ~/.xsession
+sudo systemctl restart xrdp
+```
+
+#### c) Modifier le fichier `xrdp.ini` pour améliorer les performances
+```bash
+sudo nano /etc/xrdp/xrdp.ini
+```
+Apportez les modifications suivantes :
+```ini
+bitmap_compression=true
+xserverbpp=24
+max_bpp=24
+use_compression=yes
+```
+Enregistrez et fermez l'éditeur.
+
+#### d) Configurer `polkit` pour éviter les problèmes avec XRDP
+```bash
+sudo nano /etc/polkit-1/localauthority.conf.d/02-allow-colord.conf
+```
+Ajoutez ce code :
+```ini
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.color-manager.create-device" ||
+        action.id == "org.freedesktop.color-manager.create-profile" ||
+        action.id == "org.freedesktop.color-manager.delete-device" ||
+        action.id == "org.freedesktop.color-manager.delete-profile" ||
+        action.id == "org.freedesktop.color-manager.modify-device" ||
+        action.id == "org.freedesktop.color-manager.modify-profile") {
+        return polkit.Result.NO;
+    }
+});
+```
+Enregistrez et fermez l'éditeur.
+
+#### e) Redémarrer le service XRDP
+```bash
+sudo systemctl restart xrdp
+```
+
+Avec ces commandes, vous aurez désinstallé l'ancienne version d'Eclipse, installé STS, et configuré XRDP pour une meilleure expérience utilisateur sur Ubuntu.
