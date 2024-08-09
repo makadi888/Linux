@@ -1,0 +1,59 @@
+Pour vérifier si l'agent SentinelOne est installé sur un système Ubuntu, vous pouvez suivre ces étapes :
+
+### 1. Vérifier la présence du service SentinelOne
+
+Vous pouvez utiliser la commande `systemctl` pour voir si le service SentinelOne est en cours d'exécution :
+
+```bash
+sudo systemctl status sentinelone
+```
+
+Si le service est installé et en cours d'exécution, vous devriez voir un message indiquant que le service est actif.
+
+### 2. Vérifier la présence des fichiers d'installation
+
+Recherchez les fichiers ou dossiers associés à SentinelOne. Les fichiers du client SentinelOne sont souvent installés dans `/opt/` ou `/var/lib/` :
+
+```bash
+ls /opt/sentinelone
+```
+
+ou
+
+```bash
+ls /var/lib/sentinelone
+```
+
+Si ces dossiers existent, l'agent est probablement installé.
+
+### 3. Utiliser la commande `dpkg`
+
+Si l'agent SentinelOne a été installé via un package `.deb`, vous pouvez utiliser `dpkg` pour vérifier si le package est présent :
+
+```bash
+dpkg -l | grep sentinel
+```
+
+Cette commande devrait lister tous les packages installés qui contiennent "sentinel" dans leur nom.
+
+### 4. Installer l'agent si non présent
+
+Si vous constatez que l'agent SentinelOne n'est pas installé, vous pouvez l'installer en suivant ces étapes (en supposant que vous avez déjà le fichier d'installation `.deb` ou que vous avez accès au dépôt approprié).
+
+Téléchargez l'agent depuis le lien fourni par votre administrateur ou depuis le portail SentinelOne, puis installez-le avec `dpkg` :
+
+```bash
+sudo dpkg -i <nom_du_fichier_de_l_agent>.deb
+```
+
+Remplacez `<nom_du_fichier_de_l_agent>` par le nom du fichier `.deb` que vous avez téléchargé.
+
+Ensuite, assurez-vous que le service est démarré :
+
+```bash
+sudo systemctl start sentinelone
+```
+
+Enfin, vous pouvez vérifier que le service est actif comme indiqué dans la première étape.
+
+En suivant ces étapes, vous devriez pouvoir vérifier si l'agent SentinelOne est installé sur votre système Ubuntu et l'installer si nécessaire.
