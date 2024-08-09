@@ -1,0 +1,117 @@
+### Installation de Spring Tool Suite (STS) pour Eclipse sur Ubuntu
+
+1. **Installer Java Development Kit (JDK)** :
+   - Ouvrez un terminal et installez le JDK (Java Development Kit) si vous ne l'avez pas déjà installé.
+     ```bash
+     sudo apt update
+     sudo apt install openjdk-17-jdk
+     ```
+   - Vérifiez l'installation de Java avec la commande :
+     ```bash
+     java -version
+     ```
+
+2. **Télécharger Spring Tool Suite (STS)** :
+   - Rendez-vous sur le site officiel de Spring pour télécharger STS : [Spring Tool Suite](https://spring.io/tools).
+   - Téléchargez la version Linux de STS.
+
+3. **Installer Eclipse et STS** :
+   - Extrayez le fichier téléchargé à l'aide de la commande `tar` :
+     ```bash
+     tar -xvzf spring-tool-suite-x.y.z.RELEASE-e4.x-linux.gtk.x86_64.tar.gz
+     ```
+   - Déplacez le dossier extrait dans `/opt` :
+     ```bash
+     sudo mv sts-bundle /opt/
+     ```
+   - Vous pouvez créer un lien symbolique pour simplifier l'accès :
+     ```bash
+     sudo ln -s /opt/sts-bundle/sts /usr/local/bin/sts
+     ```
+   - Pour lancer STS, vous pouvez simplement taper `sts` dans le terminal.
+
+4. **Créer un lanceur STS dans Ubuntu** :
+   - Créez un fichier `.desktop` pour STS afin de le lancer depuis le menu Applications :
+     ```bash
+     sudo nano /usr/share/applications/sts.desktop
+     ```
+   - Ajoutez les lignes suivantes :
+     ```bash
+     [Desktop Entry]
+     Name=Spring Tool Suite
+     Type=Application
+     Exec=/opt/sts-bundle/sts
+     Terminal=false
+     Icon=/opt/sts-bundle/icon.xpm
+     Comment=Spring Tool Suite IDE
+     NoDisplay=false
+     Categories=Development;IDE;
+     Name[en]=Spring Tool Suite
+     ```
+   - Enregistrez le fichier et fermez l'éditeur. STS devrait maintenant apparaître dans le menu des applications.
+
+### Tuning pour XRDP sur Ubuntu
+
+XRDP permet de se connecter à distance à votre environnement de bureau Ubuntu. Voici quelques étapes pour optimiser son utilisation.
+
+1. **Installation de XRDP** :
+   - Installez XRDP et un environnement de bureau (comme XFCE) :
+     ```bash
+     sudo apt update
+     sudo apt install xrdp xfce4 xfce4-goodies
+     ```
+
+2. **Configurer XRDP pour utiliser XFCE** :
+   - Modifiez le fichier de configuration XRDP pour utiliser XFCE comme environnement de bureau.
+     ```bash
+     echo xfce4-session > ~/.xsession
+     ```
+   - Redémarrez le service XRDP :
+     ```bash
+     sudo systemctl restart xrdp
+     ```
+
+3. **Configurer le fichier `xrdp.ini`** :
+   - Pour améliorer les performances, vous pouvez ajuster les paramètres dans `/etc/xrdp/xrdp.ini`.
+     ```bash
+     sudo nano /etc/xrdp/xrdp.ini
+     ```
+   - Modifiez les paramètres comme suit pour réduire la consommation de bande passante et améliorer la réactivité :
+     ```ini
+     bitmap_compression=true
+     xserverbpp=24
+     max_bpp=24
+     ```
+
+4. **Activer le module de polices pour améliorer l'affichage** :
+   - Ajoutez ou décommentez la ligne suivante dans le fichier `/etc/xrdp/xrdp.ini` pour améliorer la qualité des polices :
+     ```ini
+     use_compression=yes
+     ```
+
+5. **Optimiser le gestionnaire de session** :
+   - Dans certaines configurations, `polkit` peut poser problème avec `XRDP`. Modifiez `/etc/polkit-1/localauthority.conf.d/02-allow-colord.conf` :
+     ```bash
+     sudo nano /etc/polkit-1/localauthority.conf.d/02-allow-colord.conf
+     ```
+   - Ajoutez :
+     ```ini
+     polkit.addRule(function(action, subject) {
+         if (action.id == "org.freedesktop.color-manager.create-device" ||
+             action.id == "org.freedesktop.color-manager.create-profile" ||
+             action.id == "org.freedesktop.color-manager.delete-device" ||
+             action.id == "org.freedesktop.color-manager.delete-profile" ||
+             action.id == "org.freedesktop.color-manager.modify-device" ||
+             action.id == "org.freedesktop.color-manager.modify-profile") {
+             return polkit.Result.NO;
+         }
+     });
+     ```
+
+6. **Redémarrer le service XRDP** :
+   - Après toutes les configurations, redémarrez le service :
+     ```bash
+     sudo systemctl restart xrdp
+     ```
+
+Ces configurations devraient améliorer l'expérience utilisateur lors de l'utilisation de XRDP pour accéder à votre Ubuntu à distance.
