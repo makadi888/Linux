@@ -1,0 +1,94 @@
+Pour installer et configurer les éléments demandés sur un serveur Ubuntu, voici les étapes détaillées. Elles couvrent l'installation de Xorg, XRDP, l'agent SQL, Visual Studio Code, Java 21, et la configuration du nombre maximum de connexions utilisateur sur XRDP.
+
+### 1. Mise à jour du système
+Tout d'abord, mettez à jour votre système :
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+### 2. Installation de Xorg et environnement de bureau léger
+Installez un environnement de bureau léger comme Xfce, qui fonctionne bien avec XRDP :
+```bash
+sudo apt install xorg xserver-xorg xinit xfce4 xfce4-goodies -y
+```
+
+### 3. Installation de XRDP
+Installez XRDP pour permettre les connexions de bureau à distance :
+```bash
+sudo apt install xrdp -y
+sudo systemctl enable xrdp
+sudo systemctl start xrdp
+```
+
+Configurez XRDP pour utiliser Xfce :
+```bash
+echo "xfce4-session" > ~/.xsession
+sudo service xrdp restart
+```
+
+### 4. Configuration du nombre maximum de connexions utilisateur sur XRDP
+Par défaut, XRDP permet un nombre limité de connexions simultanées. Vous pouvez configurer cela en modifiant le fichier `/etc/xrdp/xrdp.ini`. Ouvrez-le avec un éditeur de texte :
+```bash
+sudo nano /etc/xrdp/xrdp.ini
+```
+
+Recherchez la ligne suivante et modifiez-la en fonction de vos besoins :
+```bash
+max_bpp=32
+max_users=10  # Remplacez 10 par le nombre maximum de connexions que vous souhaitez permettre
+```
+
+Après modification, redémarrez le service XRDP :
+```bash
+sudo systemctl restart xrdp
+```
+
+### 5. Installation de l'agent SQL (par exemple, SQL Server)
+Ajoutez le référentiel SQL Server :
+```bash
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+sudo add-apt-repository "$(wget -qO- https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list)"
+```
+
+Installez SQL Server et son agent :
+```bash
+sudo apt update
+sudo apt install mssql-server mssql-tools -y
+```
+
+Suivez les instructions à l'écran pour la configuration initiale de SQL Server.
+
+### 6. Installation de Visual Studio Code
+Installez Visual Studio Code en ajoutant le référentiel officiel :
+```bash
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+sudo apt update
+sudo apt install code -y
+```
+
+### 7. Installation de Java 21
+Ajoutez le PPA nécessaire pour Java 21 et installez-le :
+```bash
+sudo add-apt-repository ppa:linuxuprising/java -y
+sudo apt update
+sudo apt install oracle-java21-installer oracle-java21-set-default -y
+```
+
+### 8. Vérification des installations
+Enfin, vérifiez que tout est bien installé :
+- Pour vérifier Java : 
+```bash
+java -version
+```
+- Pour vérifier SQL Server :
+```bash
+sudo systemctl status mssql-server
+```
+- Pour vérifier XRDP :
+```bash
+sudo systemctl status xrdp
+```
+
+Cela devrait couvrir toutes les installations et configurations demandées sur votre serveur Ubuntu.
