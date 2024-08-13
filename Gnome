@@ -1,0 +1,72 @@
+Voici les étapes pour installer GNOME, xrdp, Ansible et Visual Studio Code (VSCode) sur une machine Ubuntu :
+
+### 1. Installer GNOME
+Si vous souhaitez installer GNOME en tant qu'environnement de bureau, suivez ces étapes :
+
+Ouvrez un terminal et exécutez les commandes suivantes :
+
+```bash
+sudo apt update
+sudo apt install gnome-shell ubuntu-gnome-desktop
+```
+
+Cela installera GNOME et les composants nécessaires. Vous pouvez ensuite redémarrer votre machine pour démarrer avec GNOME.
+
+### 2. Installer xrdp
+xrdp est un serveur de protocole RDP (Remote Desktop Protocol) qui permet de se connecter à une machine Ubuntu depuis un client RDP.
+
+Pour installer xrdp, exécutez :
+
+```bash
+sudo apt install xrdp
+sudo systemctl enable xrdp
+sudo systemctl start xrdp
+```
+
+Vous pouvez configurer xrdp pour qu'il utilise GNOME en modifiant le fichier `/etc/xrdp/startwm.sh` :
+
+```bash
+sudo nano /etc/xrdp/startwm.sh
+```
+
+Ajoutez les lignes suivantes avant la ligne `test -x /etc/X11/Xsession && exec /etc/X11/Xsession` :
+
+```bash
+gnome-session
+```
+
+Ensuite, redémarrez le service xrdp :
+
+```bash
+sudo systemctl restart xrdp
+```
+
+### 3. Installer Ansible
+Ansible est un outil d'automatisation. Pour l'installer :
+
+```bash
+sudo apt update
+sudo apt install ansible
+```
+
+Cela installera Ansible depuis les dépôts Ubuntu par défaut.
+
+### 4. Installer Visual Studio Code (VSCode)
+Pour installer VSCode, commencez par ajouter le dépôt de Microsoft et la clé GPG :
+
+```bash
+sudo apt update
+sudo apt install software-properties-common apt-transport-https wget
+wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+```
+
+Ensuite, installez VSCode :
+
+```bash
+sudo apt update
+sudo apt install code
+```
+
+### Conclusion
+Après avoir exécuté ces commandes, vous devriez avoir GNOME comme environnement de bureau, xrdp pour les connexions à distance, Ansible pour l'automatisation, et Visual Studio Code comme éditeur de code sur votre machine Ubuntu.
