@@ -1,0 +1,53 @@
+Voici toutes les commandes nécessaires pour télécharger une image, la définir comme fond d'écran, et vous assurer qu'elle est appliquée dans un environnement Ubuntu GNOME via xRDP :
+
+### 1. Télécharger l'image
+
+Si vous avez l'URL directe de l'image, vous pouvez la télécharger en utilisant `wget` :
+
+```bash
+wget -O ~/Images/mon_fond_d_ecran.jpg <URL_DE_L_IMAGE>
+```
+
+Remplacez `<URL_DE_L_IMAGE>` par l'URL directe de l'image que vous souhaitez utiliser.
+
+### 2. Définir l'image comme fond d'écran
+
+Utilisez la commande `gsettings` pour définir l'image téléchargée comme fond d'écran. Par exemple :
+
+```bash
+gsettings set org.gnome.desktop.background picture-uri "file:///home/$USER/Images/mon_fond_d_ecran.jpg"
+```
+
+Si l'image est dans un autre répertoire, ajustez le chemin d'accès dans la commande.
+
+### 3. Vérification de l'application du fond d'écran
+
+Assurez-vous que le fond d'écran a bien été appliqué en vérifiant le paramètre :
+
+```bash
+gsettings get org.gnome.desktop.background picture-uri
+```
+
+Cette commande doit retourner le chemin du fichier image que vous avez spécifié.
+
+### 4. Redémarrer GNOME Shell (optionnel)
+
+Parfois, après avoir changé le fond d'écran, il peut être nécessaire de redémarrer GNOME Shell pour que le changement prenne effet correctement :
+
+```bash
+gnome-shell --replace &
+```
+
+Cela va redémarrer l'interface GNOME sans affecter votre session en cours.
+
+### 5. Redémarrer la session xRDP (optionnel)
+
+Si vous ne voyez toujours pas le changement, vous pouvez redémarrer la session xRDP :
+
+```bash
+sudo systemctl restart xrdp
+```
+
+Cette commande redémarre le service xRDP pour s'assurer que les nouvelles configurations sont appliquées.
+
+Avec ces commandes, vous pouvez télécharger une image et la définir comme fond d'écran pour votre session GNOME sur Ubuntu, accessible via xRDP.
