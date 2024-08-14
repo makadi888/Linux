@@ -1,0 +1,39 @@
+Pour vous assurer que Java 17 est utilisé comme version par défaut et que le binaire `java` pointe bien vers Java 17, suivez les étapes suivantes :
+
+### 1. Vérifiez les versions de Java installées
+Dans un terminal, exécutez :
+```bash
+sudo update-alternatives --config java
+```
+Cette commande affiche toutes les versions de Java installées et vous permet de choisir celle que vous souhaitez utiliser par défaut.
+
+### 2. Sélectionnez Java 17 comme version par défaut
+Si Java 17 est installé, il devrait apparaître dans la liste. Vous pouvez sélectionner Java 17 en tapant le numéro correspondant à son chemin. Par exemple, si l'option 2 correspond à Java 17, entrez `2` et appuyez sur Entrée.
+
+### 3. (Facultatif) Installer Java 17 si ce n'est pas fait
+Si Java 17 n'apparaît pas dans la liste, vous pouvez l'installer en utilisant la commande suivante :
+```bash
+sudo apt install openjdk-17-jdk
+```
+Puis réessayez la commande `update-alternatives`.
+
+### 4. Vérifiez la version de Java active
+Après avoir sélectionné Java 17, vérifiez que la version correcte est bien active en exécutant :
+```bash
+java -version
+```
+Vous devriez voir une sortie indiquant que la version de Java est 17.
+
+### 5. Configurer manuellement les alternatives (si nécessaire)
+Si vous avez toujours des problèmes et que `java -version` montre Java 21 au lieu de Java 17, vous pouvez forcer la configuration avec :
+```bash
+sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-openjdk-amd64/bin/java 1
+```
+Cette commande ajoute Java 17 en tant qu'alternative avec une priorité élevée.
+
+Enfin, vérifiez à nouveau la version de Java active :
+```bash
+java -version
+```
+
+Avec ces étapes, Java 17 devrait être défini comme la version par défaut et le binaire `java` devrait pointer vers Java 17.
