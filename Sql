@@ -1,0 +1,130 @@
+D'accord, voici un guide complet avec toutes les commandes nécessaires pour configurer un environnement de bureau par défaut pour les nouveaux utilisateurs sur Ubuntu et installer SQL Developer, étape par étape.
+
+### 1. Configurer un profil de bureau par défaut avec `/etc/skel`
+
+#### 1.1. Créer un utilisateur modèle (facultatif)
+Si vous souhaitez configurer un profil de bureau spécifique pour les nouveaux utilisateurs, vous pouvez d'abord créer un utilisateur temporaire, configurer son environnement de bureau, puis copier ces configurations dans `/etc/skel`.
+
+Créez un utilisateur modèle :
+```bash
+sudo adduser utilisateur_modele
+```
+
+Connectez-vous en tant qu'utilisateur modèle et configurez l'environnement de bureau (GNOME ou autre) selon vos préférences. Une fois la configuration terminée, déconnectez-vous.
+
+#### 1.2. Copier les fichiers de configuration dans `/etc/skel`
+Copiez les fichiers de configuration de l'utilisateur modèle dans `/etc/skel`, ce qui assurera que tous les nouveaux utilisateurs auront ces mêmes configurations par défaut.
+
+```bash
+sudo cp -r /home/utilisateur_modele/.config /etc/skel/
+sudo cp -r /home/utilisateur_modele/.local /etc/skel/
+sudo cp /home/utilisateur_modele/.bashrc /etc/skel/
+sudo cp /home/utilisateur_modele/.profile /etc/skel/
+```
+
+**Note :** Si vous n'avez pas besoin de configurer un utilisateur modèle spécifique, vous pouvez directement placer des fichiers de configuration dans `/etc/skel` en fonction des besoins de votre organisation.
+
+### 2. Installation de SQL Developer sur Ubuntu
+
+#### 2.1. Installation de Java
+SQL Developer nécessite Java pour fonctionner. Installez Java 21 (ou une version compatible) :
+```bash
+sudo apt update
+sudo apt install -y oracle-java21-installer oracle-java21-set-default
+```
+
+#### 2.2. Téléchargement de SQL Developer
+Téléchargez le fichier `.rpm` de SQL Developer depuis le site Oracle. Utilisez `wget` si vous avez l'URL exacte après avoir accepté les termes de la licence sur le site d'Oracle.
+
+```bash
+wget https://download.oracle.com/otn/java/sqldeveloper/sqldeveloper-<version>-no-jre.rpm
+```
+(Remplacez `<version>` par le numéro de version spécifique.)
+
+#### 2.3. Conversion du package RPM en DEB
+Convertissez le fichier `.rpm` en un fichier `.deb` compatible avec Ubuntu en utilisant `alien` :
+```bash
+sudo apt install alien -y
+sudo alien -d sqldeveloper-<version>.rpm
+```
+
+#### 2.4. Installation du package `.deb`
+Installez le fichier `.deb généré` :
+```bash
+sudo dpkg -i sqldeveloper-<version>.deb
+```
+
+#### 2.5. Lancer SQL Developer
+Une fois l'installation terminée, lancez SQL Developer :
+```bash
+sqldeveloper
+```
+
+#### 2.6. Créer un raccourci d'application (facultatif)
+Pour faciliter le lancement de SQL Developer depuis l'environnement de bureau, créez un fichier de raccourci :
+```bash
+nano ~/.local/share/applications/sqldeveloper.desktop
+```
+
+Ajoutez le contenu suivant :
+```bash
+[Desktop Entry]
+Name=SQL Developer
+Comment=Oracle SQL Developer
+Exec=sqldeveloper
+Icon=/opt/sqldeveloper/icon.png
+Terminal=false
+Type=Application
+Categories=Development;IDE;
+```
+
+Enregistrez et fermez l'éditeur.
+
+### 3. Vérifier le profil par défaut pour les nouveaux utilisateurs
+
+Pour tester le profil par défaut, créez un nouveau compte utilisateur :
+```bash
+sudo adduser nouvel_utilisateur
+```
+
+Connectez-vous avec cet utilisateur pour vérifier que les configurations du bureau et autres paramètres par défaut sont bien appliqués.
+
+### Récapitulatif des commandes
+Voici toutes les commandes rassemblées pour une exécution séquentielle :
+
+```bash
+# Créer un utilisateur modèle (facultatif)
+sudo adduser utilisateur_modele
+
+# Configurer le profil et copier les fichiers dans /etc/skel
+sudo cp -r /home/utilisateur_modele/.config /etc/skel/
+sudo cp -r /home/utilisateur_modele/.local /etc/skel/
+sudo cp /home/utilisateur_modele/.bashrc /etc/skel/
+sudo cp /home/utilisateur_modele/.profile /etc/skel/
+
+# Installer Java 21
+sudo apt update
+sudo apt install -y oracle-java21-installer oracle-java21-set-default
+
+# Télécharger SQL Developer (remplacez <version> par la version spécifique)
+wget https://download.oracle.com/otn/java/sqldeveloper/sqldeveloper-<version>-no-jre.rpm
+
+# Convertir le RPM en DEB
+sudo apt install alien -y
+sudo alien -d sqldeveloper-<version>.rpm
+
+# Installer le DEB
+sudo dpkg -i sqldeveloper-<version>.deb
+
+# Lancer SQL Developer
+sqldeveloper
+
+# Créer un raccourci d'application (facultatif)
+nano ~/.local/share/applications/sqldeveloper.desktop
+# (Ajouter le contenu ci-dessus)
+
+# Créer un nouveau compte utilisateur pour tester le profil par défaut
+sudo adduser nouvel_utilisateur
+```
+
+Avec ces étapes, vous devriez être prêt à configurer un environnement de bureau par défaut pour les nouveaux utilisateurs et installer SQL Developer sur un serveur Ubuntu.
