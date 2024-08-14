@@ -1,0 +1,78 @@
+Pour installer une machine virtuelle (VM) avec Ubuntu et configurer la partition `/var/lib/docker` avec une taille de 300 Go, voici les étapes générales :
+
+### 1. Créer la VM avec Ubuntu
+1. **Télécharger l'ISO Ubuntu** : Rendez-vous sur le site officiel d'Ubuntu et téléchargez l'ISO de la version que vous souhaitez installer (par exemple, Ubuntu Server 22.04 LTS).
+   
+2. **Créer la VM** :
+   - Utilisez un hyperviseur comme **VirtualBox**, **VMware**, ou **KVM** pour créer une nouvelle VM.
+   - Attribuez les ressources (CPU, RAM, etc.) à la VM selon vos besoins.
+   - Montez l'ISO d'Ubuntu dans le lecteur CD/DVD virtuel de la VM.
+
+3. **Installer Ubuntu** :
+   - Démarrez la VM avec l'ISO monté et suivez le processus d'installation d'Ubuntu.
+   - Pendant l'installation, sélectionnez l'option d'installation standard sans partitionnement manuel (nous ajusterons la partition après l'installation).
+
+### 2. Configurer la partition `/var/lib/docker`
+Après l'installation de base d'Ubuntu, suivez ces étapes pour configurer la partition de 300 Go pour `/var/lib/docker` :
+
+1. **Ajouter un disque virtuel supplémentaire (facultatif)** :
+   - Si vous n'avez pas alloué 300 Go au disque principal, vous pouvez ajouter un disque virtuel supplémentaire à la VM via les paramètres de votre hyperviseur.
+   - Le disque peut être de type dynamique ou fixe, mais assurez-vous qu'il ait une taille de 300 Go.
+
+2. **Partitionner et formater le disque** :
+   - Connectez-vous à votre VM Ubuntu.
+   - Identifiez le disque à utiliser (généralement `/dev/sdb` pour le deuxième disque) :
+     ```bash
+     sudo fdisk -l
+     ```
+   - Créez une nouvelle partition sur ce disque de 300 Go :
+     ```bash
+     sudo fdisk /dev/sdb
+     ```
+     - Appuyez sur `n` pour créer une nouvelle partition.
+     - Sélectionnez `p` pour une partition principale, et choisissez le numéro de partition.
+     - Appuyez sur `w` pour écrire les changements.
+
+   - Formatez la partition en ext4 (ou un autre format si souhaité) :
+     ```bash
+     sudo mkfs.ext4 /dev/sdb1
+     ```
+
+3. **Monter la partition sur `/var/lib/docker`** :
+   - Créez un point de montage temporaire :
+     ```bash
+     sudo mount /dev/sdb1 /mnt
+     ```
+   - Copiez les fichiers existants de `/var/lib/docker` dans le nouveau disque :
+     ```bash
+     sudo rsync -avz /var/lib/docker/ /mnt/
+     ```
+   - Démontez le disque :
+     ```bash
+     sudo umount /mnt
+     ```
+   - Modifiez le fichier `/etc/fstab` pour monter la partition automatiquement au démarrage :
+     ```bash
+     sudo nano /etc/fstab
+     ```
+     Ajoutez la ligne suivante :
+     ```
+     /dev/sdb1  /var/lib/docker  ext4  defaults  0  2
+     ```
+   - Montez la nouvelle partition :
+     ```bash
+     sudo mount -a
+     ```
+
+4. **Redémarrer Docker** :
+   - Redémarrez le service Docker pour appliquer les changements :
+     ```bash
+     sudo systemctl restart docker
+     ```
+
+Votre partition `/var/lib/docker` devrait maintenant utiliser le disque de 300 Go. Vous pouvez vérifier l'espace disponible avec :
+```bash
+df -h /var/lib/docker
+```
+
+Cette procédure devrait suffire à installer Ubuntu dans une VM et configurer une partition de 300 Go pour Docker.
