@@ -1,0 +1,35 @@
+Pour désinstaller Java 21 et installer Java 17 sur Ubuntu, voici les étapes à suivre :
+
+### 1. Désinstaller Java 21
+- Ouvrez un terminal.
+- Listez les versions de Java installées :
+  ```bash
+  sudo update-alternatives --config java
+  ```
+- Si Java 21 est présent, désinstallez-le :
+  ```bash
+  sudo apt remove openjdk-21-jdk
+  ```
+
+### 2. Installer Java 17
+- Mettez à jour la liste des paquets :
+  ```bash
+  sudo apt update
+  ```
+- Installez Java 17 :
+  ```bash
+  sudo apt install openjdk-17-jdk
+  ```
+- Vérifiez que Java 17 est bien installé et configuré :
+  ```bash
+  java -version
+  ```
+
+### 3. Configurer Java 17 par défaut (si nécessaire)
+- Utilisez `update-alternatives` pour configurer la version par défaut :
+  ```bash
+  sudo update-alternatives --config java
+  ```
+  Choisissez Java 17 dans la liste.
+
+Une fois ces étapes terminées, Java 21 sera désinstallé et Java 17 sera installé et configuré comme version par défaut.
