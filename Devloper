@@ -1,0 +1,73 @@
+Pour installer SQL Developer sur un serveur Ubuntu, voici les étapes à suivre. SQL Developer est une application Oracle pour le développement et la gestion de bases de données, principalement pour Oracle SQL. 
+
+### 1. Installation des dépendances requises
+SQL Developer nécessite Java pour fonctionner, que nous avons déjà installé (Java 21). Assurez-vous que les dépendances suivantes sont également installées :
+```bash
+sudo apt install libsqldeveloper-java -y
+```
+
+### 2. Téléchargement de SQL Developer
+SQL Developer n'est pas disponible dans les dépôts APT par défaut, vous devez donc le télécharger directement depuis le site Oracle. Accédez au site Oracle pour télécharger le fichier `.rpm` de SQL Developer. 
+
+Voici comment vous pouvez le faire en ligne de commande :
+
+1. Allez sur [la page de téléchargement Oracle SQL Developer](https://www.oracle.com/tools/downloads/sqldev-downloads.html).
+2. Acceptez les termes et téléchargez la version Linux (RPM Package) en utilisant un navigateur ou un outil de téléchargement comme `wget` (avec l'URL exacte du fichier, que vous devez obtenir après avoir accepté les termes de la licence sur le site d'Oracle).
+
+Par exemple :
+```bash
+wget https://download.oracle.com/otn/java/sqldeveloper/sqldeveloper-<version>-no-jre.rpm
+```
+
+(Remplacez `<version>` par la version exacte du fichier téléchargé.)
+
+### 3. Conversion et installation du package RPM
+SQL Developer est fourni sous forme de package `.rpm`, ce qui n'est pas directement compatible avec Ubuntu, qui utilise des packages `.deb`. Nous devons convertir le package `.rpm` en `.deb` à l'aide de `alien`, puis l'installer.
+
+Installez `alien` :
+```bash
+sudo apt install alien -y
+```
+
+Convertissez le fichier `.rpm` téléchargé en `.deb` :
+```bash
+sudo alien -d sqldeveloper-<version>.rpm
+```
+
+(Remplacez `<version>` par le numéro de version exact du fichier téléchargé.)
+
+Ensuite, installez le fichier `.deb` généré :
+```bash
+sudo dpkg -i sqldeveloper-<version>.deb
+```
+
+### 4. Lancer SQL Developer
+Après l'installation, vous pouvez lancer SQL Developer depuis la ligne de commande :
+```bash
+sqldeveloper
+```
+
+### 5. Création d'un raccourci (facultatif)
+Si vous utilisez GNOME ou un autre environnement de bureau, vous pouvez créer un raccourci pour SQL Developer. Créez un fichier de bureau :
+```bash
+nano ~/.local/share/applications/sqldeveloper.desktop
+```
+
+Ajoutez les lignes suivantes dans ce fichier :
+```bash
+[Desktop Entry]
+Name=SQL Developer
+Comment=Oracle SQL Developer
+Exec=sqldeveloper
+Icon=/opt/sqldeveloper/icon.png
+Terminal=false
+Type=Application
+Categories=Development;IDE;
+```
+
+Enregistrez et fermez l'éditeur. Vous devriez maintenant voir SQL Developer dans votre menu d'applications.
+
+### 6. Vérification de l'installation
+Lancez SQL Developer pour vous assurer que tout fonctionne correctement.
+
+Avec ces étapes, SQL Developer devrait être correctement installé sur votre serveur Ubuntu, et vous pouvez l'utiliser pour gérer vos bases de données Oracle.
