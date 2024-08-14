@@ -1,0 +1,75 @@
+Si vous préférez utiliser GNOME au lieu de Xfce pour votre environnement de bureau sur un serveur Ubuntu, vous pouvez l'installer et le configurer pour qu'il fonctionne avec XRDP. Voici les étapes à suivre pour installer Xorg, GNOME, et configurer XRDP pour utiliser GNOME.
+
+### 1. Mise à jour du système
+Mettez à jour votre système :
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+### 2. Installation de Xorg et GNOME
+Installez le serveur Xorg et GNOME. GNOME est plus lourd que Xfce, mais il offre une interface plus complète.
+```bash
+sudo apt install xorg gnome-session gnome-terminal gdm3 -y
+```
+
+### 3. Installation de XRDP
+Installez XRDP pour permettre les connexions de bureau à distance :
+```bash
+sudo apt install xrdp -y
+sudo systemctl enable xrdp
+sudo systemctl start xrdp
+```
+
+### 4. Configuration de XRDP pour utiliser GNOME
+Modifiez le fichier de configuration XRDP pour utiliser GNOME. Ouvrez-le avec un éditeur de texte :
+```bash
+sudo nano /etc/xrdp/startwm.sh
+```
+
+Recherchez les lignes suivantes :
+```bash
+#test -x /etc/X11/Xsession && exec /etc/X11/Xsession
+#exec /bin/sh /etc/X11/Xsession
+```
+Commentez-les en ajoutant un `#` au début, puis ajoutez les lignes suivantes juste après ces lignes :
+```bash
+unset DBUS_SESSION_BUS_ADDRESS
+unset XDG_RUNTIME_DIR
+exec gnome-session
+```
+
+### 5. Redémarrage de XRDP et test de connexion
+Redémarrez le service XRDP pour appliquer les changements :
+```bash
+sudo systemctl restart xrdp
+```
+
+Vous devriez maintenant pouvoir vous connecter à votre serveur Ubuntu via XRDP et accéder à une session GNOME.
+
+### 6. Configuration du nombre maximum de connexions utilisateur sur XRDP
+Si vous souhaitez ajuster le nombre maximum de connexions utilisateur XRDP, suivez ces étapes :
+
+Ouvrez le fichier de configuration XRDP :
+```bash
+sudo nano /etc/xrdp/xrdp.ini
+```
+
+Cherchez la ligne avec `max_users` et modifiez-la selon vos besoins :
+```bash
+max_users=10  # Remplacez 10 par le nombre de connexions simultanées souhaitées
+```
+
+Ensuite, redémarrez XRDP pour que les changements prennent effet :
+```bash
+sudo systemctl restart xrdp
+```
+
+### 7. Vérification des installations
+Vérifiez que GNOME et XRDP sont correctement installés et fonctionnent :
+- Pour GNOME, ouvrez une session à distance via XRDP.
+- Pour XRDP, vérifiez son statut :
+```bash
+sudo systemctl status xrdp
+```
+
+Avec ces étapes, vous aurez un serveur Ubuntu configuré avec GNOME comme environnement de bureau, accessible via XRDP.
