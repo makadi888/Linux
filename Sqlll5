@@ -1,0 +1,55 @@
+Étant donné que vous utilisez GNOME avec XRDP sur Ubuntu, et que vous avez encore des problèmes pour créer un lien symbolique sur le bureau, voici quelques étapes supplémentaires pour diagnostiquer et résoudre le problème.
+
+### 1. Vérifier l'environnement GNOME sous XRDP
+
+Sous XRDP, le dossier `Desktop` ou `Bureau` pourrait ne pas être correctement configuré ou accessible de la même manière qu'avec une session GNOME normale. Voici ce que vous pouvez faire :
+
+#### a. Vérifier le nom du dossier de bureau
+
+Il est possible que votre session GNOME via XRDP utilise un répertoire différent pour le bureau. Vous pouvez lister les dossiers dans votre répertoire personnel pour vérifier s'il existe un répertoire `Desktop`, `Bureau`, ou autre :
+
+```bash
+ls -a ~/
+```
+
+Cherchez un dossier qui correspond au bureau (cela pourrait être `.desktop`, `.Bureau`, etc., avec un point au début indiquant un fichier ou dossier caché).
+
+#### b. Trouver le chemin correct du bureau
+
+Sous GNOME, le chemin du bureau pourrait être différent. Pour savoir où se trouve le bureau, utilisez la commande suivante :
+
+```bash
+xdg-user-dir DESKTOP
+```
+
+Cette commande devrait vous donner le chemin exact du dossier de bureau utilisé par votre session. Par exemple, il pourrait retourner quelque chose comme `/home/votre_nom_utilisateur/Bureau` ou `/home/votre_nom_utilisateur/Desktop`.
+
+### 2. Créer le lien symbolique avec le chemin correct
+
+Maintenant que vous avez identifié le chemin correct pour le bureau, créez le lien symbolique en utilisant ce chemin.
+
+Par exemple, si la commande `xdg-user-dir DESKTOP` retourne `/home/votre_nom_utilisateur/Bureau`, alors utilisez :
+
+```bash
+ln -s ~/.local/share/applications/sqldeveloper.desktop /home/votre_nom_utilisateur/Bureau/sqldeveloper.desktop
+```
+
+### 3. Redémarrer la session GNOME
+
+Après avoir fait cela, il est parfois nécessaire de redémarrer votre session XRDP pour que les changements prennent effet. Déconnectez-vous de la session XRDP, puis reconnectez-vous.
+
+### 4. Vérifier les permissions
+
+Assurez-vous que les permissions des fichiers et dossiers sont correctes pour que votre utilisateur puisse y accéder. Par exemple, vérifiez que le fichier `.desktop` est bien exécutable :
+
+```bash
+chmod +x ~/.local/share/applications/sqldeveloper.desktop
+```
+
+Et que le dossier du bureau est accessible en écriture et lecture pour l'utilisateur :
+
+```bash
+chmod 755 ~/Desktop  # ou ~/Bureau selon le chemin trouvé
+```
+
+En suivant ces étapes, vous devriez être en mesure de diagnostiquer où le problème se trouve et de le résoudre pour faire apparaître l'icône SQL Developer sur le bureau de votre session GNOME sous XRDP.
