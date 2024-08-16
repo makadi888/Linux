@@ -1,0 +1,96 @@
+Pour installer Oracle SQL Developer sur un serveur Ubuntu avec GNOME et XRDP, voici les étapes à suivre pour s'assurer que l'application est installée et qu'une icône est disponible sur le bureau.
+
+### 1. Préparer l'environnement
+Avant de commencer, assurez-vous que votre système est à jour :
+
+```bash
+sudo apt update && sudo apt upgrade
+```
+
+### 2. Installer les dépendances Java
+SQL Developer nécessite Java pour fonctionner. Installez OpenJDK :
+
+```bash
+sudo apt install openjdk-11-jdk
+```
+
+### 3. Télécharger Oracle SQL Developer
+Accédez au site d'Oracle pour télécharger SQL Developer :
+
+- Rendez-vous sur la [page de téléchargement SQL Developer](https://www.oracle.com/tools/downloads/sqldev-downloads.html).
+- Téléchargez le fichier ZIP approprié pour Linux (par exemple, `sqldeveloper-<version>-no-jre.zip`).
+- Copiez le fichier téléchargé sur votre serveur Ubuntu.
+
+### 4. Installer SQL Developer
+Décompressez l'archive téléchargée :
+
+```bash
+unzip sqldeveloper-<version>-no-jre.zip
+```
+
+Déplacez le dossier décompressé à un emplacement souhaité, par exemple `/opt` :
+
+```bash
+sudo mv sqldeveloper /opt/
+```
+
+### 5. Créer un script de lancement
+Créez un script de lancement pour SQL Developer :
+
+```bash
+sudo nano /usr/local/bin/sqldeveloper
+```
+
+Ajoutez-y les lignes suivantes :
+
+```bash
+#!/bin/bash
+/opt/sqldeveloper/sqldeveloper.sh
+```
+
+Rendez le script exécutable :
+
+```bash
+sudo chmod +x /usr/local/bin/sqldeveloper
+```
+
+### 6. Créer un fichier `.desktop` pour l'icône sur le bureau
+Créez un fichier `.desktop` pour SQL Developer afin qu'il apparaisse dans les applications GNOME et sur le bureau :
+
+```bash
+nano ~/.local/share/applications/sqldeveloper.desktop
+```
+
+Ajoutez le contenu suivant :
+
+```ini
+[Desktop Entry]
+Name=SQL Developer
+Comment=Oracle SQL Developer
+Exec=/usr/local/bin/sqldeveloper
+Icon=/opt/sqldeveloper/icon.png
+Terminal=false
+Type=Application
+Categories=Development;Database;
+```
+
+Assurez-vous que le fichier `.desktop` est exécutable :
+
+```bash
+chmod +x ~/.local/share/applications/sqldeveloper.desktop
+```
+
+### 7. Créer un lien vers le bureau
+Si vous voulez une icône directement sur le bureau, créez un lien symbolique :
+
+```bash
+ln -s ~/.local/share/applications/sqldeveloper.desktop ~/Desktop/sqldeveloper.desktop
+```
+
+### 8. Lancer SQL Developer
+Vous devriez maintenant voir l'icône de SQL Developer sur le bureau et dans le menu d'applications de GNOME. Double-cliquez sur l'icône pour lancer SQL Developer.
+
+### 9. Configuration XRDP
+Si vous utilisez XRDP pour accéder à votre serveur, assurez-vous que vous pouvez lancer les applications graphiques comme SQL Developer via votre session XRDP.
+
+Cette méthode devrait vous permettre d'installer Oracle SQL Developer sur un serveur Ubuntu avec GNOME, et d'avoir une icône fonctionnelle sur le bureau pour un accès rapide.
