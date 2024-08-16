@@ -1,0 +1,42 @@
+Pour remplacer GNOME par XFCE sur une machine où vous avez déjà installé GNOME et XRDP, vous pouvez suivre les étapes suivantes. Je vais vous guider avec les commandes appropriées :
+
+1. **Installer XFCE :**
+   Vous pouvez installer l'environnement de bureau XFCE avec la commande suivante :
+
+   ```bash
+   sudo apt update
+   sudo apt install xfce4 xfce4-goodies
+   ```
+
+2. **Configurer XRDP pour utiliser XFCE :**
+   Après avoir installé XFCE, vous devez configurer XRDP pour qu'il utilise XFCE au lieu de GNOME. Modifiez le fichier `.xsession` dans votre répertoire personnel pour spécifier l'environnement XFCE.
+
+   Si le fichier `.xsession` n'existe pas, créez-le avec la commande suivante :
+
+   ```bash
+   echo "startxfce4" > ~/.xsession
+   ```
+
+3. **Redémarrer le service XRDP :**
+   Après avoir configuré `.xsession`, vous devez redémarrer le service XRDP pour appliquer les modifications.
+
+   ```bash
+   sudo systemctl restart xrdp
+   ```
+
+4. **Désinstaller GNOME (optionnel) :**
+   Si vous voulez désinstaller GNOME pour libérer de l'espace, vous pouvez utiliser la commande suivante. Cependant, faites attention car cela peut supprimer certains paquets nécessaires :
+
+   ```bash
+   sudo apt purge ubuntu-gnome-desktop gnome-shell
+   sudo apt autoremove
+   ```
+
+5. **Redémarrer la machine :**
+   Pour vous assurer que les changements ont été appliqués correctement, vous pouvez redémarrer la machine.
+
+   ```bash
+   sudo reboot
+   ```
+
+Après avoir suivi ces étapes, vous devriez pouvoir vous connecter à votre machine via XRDP et être accueilli par l'environnement de bureau XFCE au lieu de GNOME.
