@@ -1,0 +1,42 @@
+L'erreur que vous voyez indique que le dossier `~/Desktop` (ou `~/Bureau` si vous utilisez une version francisée d'Ubuntu) n'existe pas pour l'utilisateur actuel, ou que le chemin spécifié est incorrect.
+
+### 1. Vérifier le nom du dossier de bureau
+Sur une installation francophone d'Ubuntu, le dossier `Desktop` pourrait être nommé `Bureau`. Vérifiez d'abord quel est le nom correct en listant les dossiers dans votre répertoire personnel :
+
+```bash
+ls ~/
+```
+
+Vous devriez voir soit `Desktop`, soit `Bureau`. Utilisez ensuite le nom correct dans la commande.
+
+### 2. Créer le dossier de bureau s'il n'existe pas
+Si le dossier `Desktop` ou `Bureau` n'existe pas, vous pouvez le créer manuellement :
+
+Pour un système en anglais :
+
+```bash
+mkdir ~/Desktop
+```
+
+Pour un système en français :
+
+```bash
+mkdir ~/Bureau
+```
+
+### 3. Créer le lien symbolique
+Après avoir vérifié ou créé le bon dossier, utilisez la commande suivante pour créer le lien symbolique vers le bureau :
+
+- **Pour un système en anglais :**
+
+  ```bash
+  ln -s ~/.local/share/applications/sqldeveloper.desktop ~/Desktop/sqldeveloper.desktop
+  ```
+
+- **Pour un système en français :**
+
+  ```bash
+  ln -s ~/.local/share/applications/sqldeveloper.desktop ~/Bureau/sqldeveloper.desktop
+  ```
+
+Cela devrait créer l'icône de SQL Developer sur votre bureau. Vous pourrez ensuite y accéder en double-cliquant dessus.
