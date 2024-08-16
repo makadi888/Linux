@@ -1,0 +1,54 @@
+Il semble que vous ayez modifié le répertoire `/etc/skel` (ou `/skel`) sur un système Ubuntu avec GNOME et XRDP, et maintenant, lors de la connexion avec un autre profil, vous avez un écran noir. Voici quelques pistes pour résoudre ce problème :
+
+### 1. **Vérifiez les permissions et le contenu de `/etc/skel`**:
+   Le répertoire `/etc/skel` contient les fichiers de configuration qui sont copiés dans le répertoire personnel de chaque nouvel utilisateur lors de sa création. Assurez-vous que les fichiers et les permissions dans ce répertoire sont corrects. Vous pouvez comparer les permissions avec un système Ubuntu fonctionnel pour vous assurer qu'elles sont cohérentes.
+
+   ```bash
+   ls -l /etc/skel
+   ```
+
+### 2. **Réinitialiser les fichiers de configuration dans le répertoire utilisateur**:
+   Si vous avez modifié les fichiers dans `/etc/skel`, ces modifications ont peut-être introduit des erreurs dans les fichiers de configuration du profil utilisateur. Pour réinitialiser ces fichiers :
+
+   ```bash
+   cp /etc/skel/.bashrc /home/username/
+   cp /etc/skel/.profile /home/username/
+   cp /etc/skel/.bash_logout /home/username/
+   ```
+
+   Remplacez `username` par le nom de l'utilisateur concerné. Assurez-vous que les fichiers sont copiés avec les permissions appropriées :
+
+   ```bash
+   chown username:username /home/username/.bashrc /home/username/.profile /home/username/.bash_logout
+   ```
+
+### 3. **Vérifier les fichiers de session XRDP**:
+   L'écran noir peut être causé par un problème avec les fichiers de configuration de session XRDP. Vérifiez le contenu de ces fichiers, comme `.xsession` ou `.xinitrc`, dans le répertoire personnel de l'utilisateur.
+
+   ```bash
+   ls -al /home/username/.x*
+   ```
+
+   Si vous trouvez un fichier `.xsession`, assurez-vous qu'il contient une commande valide pour démarrer l'environnement de bureau GNOME, comme :
+
+   ```bash
+   gnome-session
+   ```
+
+### 4. **Redémarrer XRDP et GNOME**:
+   Parfois, le redémarrage des services XRDP ou même de l'ordinateur peut résoudre le problème.
+
+   ```bash
+   sudo systemctl restart xrdp
+   sudo systemctl restart gdm3
+   ```
+
+### 5. **Vérifier les journaux**:
+   Consultez les journaux de XRDP et de GNOME pour toute erreur qui pourrait indiquer la cause de l'écran noir.
+
+   ```bash
+   sudo tail -f /var/log/xrdp.log
+   sudo tail -f /var/log/syslog
+   ```
+
+En suivant ces étapes, vous devriez pouvoir résoudre le problème de l'écran noir lors de la connexion via XRDP. Si le problème persiste, il pourrait être utile de réexaminer les changements apportés à `/etc/skel` et de revenir à une configuration connue pour fonctionner.
