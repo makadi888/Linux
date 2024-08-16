@@ -1,0 +1,24 @@
+L'erreur "no such file or directory" signifie que le dossier `~/.local/share/applications/` n'existe pas encore sur votre système. Ce dossier est utilisé pour stocker les fichiers `.desktop` des applications pour l'utilisateur actuel.
+
+Voici comment procéder :
+
+### 1. Créer le dossier manquant
+Si le dossier `~/.local/share/applications/` n'existe pas, vous devez le créer manuellement.
+
+```bash
+mkdir -p ~/.local/share/applications/
+```
+
+Le `-p` permet de créer les dossiers parents si ceux-ci n'existent pas déjà.
+
+### 2. Créer le fichier `.desktop`
+Après avoir créé le dossier, vous pouvez à nouveau tenter de créer le fichier `.desktop` pour SQL Developer :
+
+```bash
+nano ~/.local/share/applications/sqldeveloper.desktop
+```
+
+### 3. Suivre les étapes précédentes
+Vous pouvez maintenant continuer en ajoutant le contenu au fichier `.desktop` comme indiqué dans la réponse précédente.
+
+Si vous suivez ces étapes, cela devrait résoudre le problème et vous permettre de créer le fichier `.desktop` sans erreurs.
