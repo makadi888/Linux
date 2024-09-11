@@ -1,0 +1,104 @@
+Pour changer l'adresse IP et le nom d'hôte (hostname) sur une machine virtuelle (VM) exécutant Oracle Linux 9, vous pouvez suivre les étapes ci-dessous.
+
+### 1. Changer l'adresse IP
+
+Oracle Linux utilise `nmcli` ou `nmtui` pour la gestion des connexions réseau. Vous pouvez également éditer les fichiers de configuration manuellement.
+
+#### A. Utilisation de `nmcli`
+
+1. **Lister les connexions disponibles :**
+   ```bash
+   nmcli connection show
+   ```
+
+2. **Modifier la configuration IP de la connexion (remplacez `your-connection-name` par le nom de votre connexion) :**
+   ```bash
+   nmcli connection modify your-connection-name ipv4.addresses "192.168.1.100/24"
+   nmcli connection modify your-connection-name ipv4.gateway "192.168.1.1"
+   nmcli connection modify your-connection-name ipv4.dns "8.8.8.8 8.8.4.4"
+   nmcli connection modify your-connection-name ipv4.method manual
+   ```
+
+3. **Appliquer les changements :**
+   ```bash
+   nmcli connection up your-connection-name
+   ```
+
+#### B. Utilisation de `nmtui`
+
+1. **Lancer l'interface textuelle :**
+   ```bash
+   nmtui
+   ```
+
+2. **Sélectionner `Edit a connection`, puis choisissez votre connexion et modifiez les paramètres IP.**
+
+3. **Après modification, enregistrez et quittez.**
+
+#### C. Modification manuelle des fichiers de configuration
+
+1. **Éditez le fichier de configuration réseau (remplacez `eth0` par l'interface réseau appropriée) :**
+   ```bash
+   sudo vi /etc/sysconfig/network-scripts/ifcfg-eth0
+   ```
+
+2. **Modifiez les lignes suivantes ou ajoutez-les si elles n'existent pas :**
+   ```
+   BOOTPROTO=none
+   IPADDR=192.168.1.100
+   PREFIX=24
+   GATEWAY=192.168.1.1
+   DNS1=8.8.8.8
+   ```
+
+3. **Redémarrez le réseau pour appliquer les changements :**
+   ```bash
+   sudo systemctl restart NetworkManager
+   ```
+
+### 2. Changer le nom d'hôte (hostname)
+
+#### A. Utilisation de la commande `hostnamectl`
+
+1. **Changer le nom d'hôte (remplacez `new-hostname` par le nom souhaité) :**
+   ```bash
+   sudo hostnamectl set-hostname new-hostname
+   ```
+
+2. **Vérifier le changement :**
+   ```bash
+   hostnamectl
+   ```
+
+#### B. Modification manuelle du fichier `/etc/hostname`
+
+1. **Éditez le fichier `/etc/hostname` :**
+   ```bash
+   sudo vi /etc/hostname
+   ```
+
+2. **Remplacez le contenu par le nouveau nom d'hôte :**
+   ```
+   new-hostname
+   ```
+
+3. **Pour que les changements soient pris en compte, vous pouvez redémarrer la machine ou redémarrer les services associés :**
+   ```bash
+   sudo systemctl restart systemd-hostnamed
+   ```
+
+### 3. Mise à jour du fichier `/etc/hosts`
+
+Il est recommandé de mettre à jour le fichier `/etc/hosts` pour associer le nouveau nom d'hôte à l'adresse IP locale :
+
+1. **Éditez le fichier `/etc/hosts` :**
+   ```bash
+   sudo vi /etc/hosts
+   ```
+
+2. **Ajoutez ou modifiez la ligne :**
+   ```
+   127.0.0.1   new-hostname
+   ```
+
+Avec ces étapes, vous aurez configuré la nouvelle adresse IP et le nouveau nom d'hôte sur votre machine Oracle Linux 9.
