@@ -1,0 +1,27 @@
+Pour afficher les utilisateurs dans une base de données PostgreSQL, vous pouvez utiliser la commande suivante dans le shell psql :
+
+Connectez-vous à PostgreSQL en tant qu'utilisateur superuser ou avec des privilèges suffisants (par exemple, postgres).
+bash
+Copier le code
+sudo -u postgres psql
+Si vous êtes déjà connecté à PostgreSQL via psql, vous n'avez pas besoin de cette commande.
+
+Une fois connecté, pour afficher tous les utilisateurs PostgreSQL, exécutez cette requête SQL :
+sql
+Copier le code
+\du
+Cette commande listera tous les utilisateurs PostgreSQL et leurs rôles associés.
+
+Si vous souhaitez plus de détails sur un utilisateur spécifique, vous pouvez exécuter :
+sql
+Copier le code
+SELECT * FROM pg_user WHERE usename = 'nom_utilisateur';
+Remplacez nom_utilisateur par le nom de l'utilisateur que vous souhaitez examiner.
+
+Cela vous donnera une vue complète de tous les utilisateurs dans PostgreSQL.
+
+
+
+
+
+ChatGPT peut faire des erreurs. Envisagez de vérifier les informations importantes.
