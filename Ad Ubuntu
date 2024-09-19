@@ -1,0 +1,97 @@
+Pour déconnecter un serveur Ubuntu d'Active Directory (AD) et le reconnecter, voici les étapes générales à suivre :
+
+### 1. **Déconnecter le serveur Ubuntu de l'Active Directory**
+
+#### a) **Désactiver et supprimer l'intégration**
+- Si vous avez utilisé `realmd` pour rejoindre l'AD, vous pouvez utiliser la commande suivante pour quitter le domaine AD :
+
+```bash
+sudo realm leave domain.tld
+```
+
+- Remplacez `domain.tld` par votre domaine Active Directory.
+
+#### b) **Nettoyage des configurations locales**
+- Vous devrez peut-être supprimer ou modifier certains fichiers de configuration :
+
+  - Fichier de configuration de Kerberos (`/etc/krb5.conf`), si utilisé.
+  - Le fichier `sssd.conf` si vous utilisez `sssd` pour gérer les comptes AD (souvent dans `/etc/sssd/sssd.conf`).
+  - Les entrées dans `/etc/nsswitch.conf` pour supprimer la résolution des utilisateurs via AD.
+
+- Vous pouvez également supprimer le répertoire machine du cache Kerberos :
+```bash
+sudo rm -rf /var/lib/sss/db/*
+```
+
+### 2. **Reconnecter le serveur Ubuntu à l'Active Directory**
+
+#### a) **Installation des paquets nécessaires**
+- Assurez-vous que les paquets `realmd`, `sssd`, `krb5-user`, et `packagekit` sont installés :
+
+```bash
+sudo apt install realmd sssd krb5-user packagekit
+```
+
+#### b) **Rejoindre le domaine AD**
+- Utilisez `realmd` pour reconnecter la machine au domaine AD :
+
+```bash
+sudo realm join domain.tld
+```
+
+- Remplacez `domain.tld` par votre domaine Active Directory. Vous devrez fournir les identifiants d'un utilisateur disposant des droits nécessaires pour ajouter la machine au domaine.
+
+#### c) **Configurer SSSD (si nécessaire)**
+- Si vous avez besoin de gérer les comptes AD localement, éditez le fichier `/etc/sssd/sssd.conf` pour correspondre à votre environnement AD.
+- Par exemple :
+
+```ini
+[sssd]
+domains = domain.tld
+config_file_version = 2
+services = nss, pam
+
+[domain/domain.tld]
+id_provider = ad
+auth_provider = ad
+chpass_provider = ad
+access_provider = ad
+ldap_id_mapping = True
+```
+
+- Redémarrez `sssd` après la configuration :
+
+```bash
+sudo systemctl restart sssd
+```
+
+#### d) **Configurer Kerberos (si nécessaire)**
+- Mettez à jour ou éditez le fichier `/etc/krb5.conf` pour correspondre à votre domaine AD :
+
+```ini
+[libdefaults]
+    default_realm = DOMAIN.TLD
+    dns_lookup_realm = false
+    dns_lookup_kdc = true
+
+[realms]
+    DOMAIN.TLD = {
+        kdc = your_kdc_server.domain.tld
+        admin_server = your_kdc_server.domain.tld
+    }
+
+[domain_realm]
+    .domain.tld = DOMAIN.TLD
+    domain.tld = DOMAIN.TLD
+```
+
+### 3. **Test de la connexion**
+- Testez la connexion en vous assurant que vous pouvez résoudre les utilisateurs du domaine et vous connecter avec un compte AD :
+
+```bash
+id user@domain.tld
+```
+
+Cela devrait afficher les informations sur l'utilisateur AD si tout est correctement configuré.
+
+Avec ces étapes, vous devriez pouvoir déconnecter et reconnecter votre serveur Ubuntu à l'Active Directory.
