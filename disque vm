@@ -1,0 +1,106 @@
+Pour préparer une machine virtuelle Ubuntu avec un disque dédié de 10 Go monté sur `/DATA/zookeeper`, voici les étapes générales à suivre. Je vais te fournir un guide basé sur un environnement Linux classique avec `KVM` ou `VirtualBox` pour créer une VM Ubuntu, puis y ajouter et configurer le disque.
+
+### 1. Créer une VM Ubuntu
+
+Si tu utilises un outil comme **VirtualBox** ou **KVM**, les étapes sont similaires.
+
+#### VirtualBox :
+1. Ouvre **VirtualBox** et clique sur **Nouvelle** pour créer une VM.
+2. Choisis :
+   - **Nom** : UbuntuZookeeperVM
+   - **Type** : Linux
+   - **Version** : Ubuntu (64-bit)
+3. Alloue les ressources (RAM, CPU, etc.) selon tes besoins.
+4. Crée un disque virtuel (par exemple 20 Go pour le système principal).
+   - Type de fichier : VDI
+   - Dynamiquement alloué ou taille fixe.
+   - Taille : 20 Go ou plus pour le système d'exploitation.
+5. Lance la machine virtuelle, et installe Ubuntu à partir de l'ISO téléchargé.
+
+### 2. Ajouter un disque supplémentaire de 10 Go
+Après avoir installé Ubuntu, il faut ajouter un disque de 10 Go pour Zookeeper.
+
+#### VirtualBox :
+1. Éteins la VM.
+2. Va dans les paramètres de la VM :
+   - **Stockage** → **Contrôleur SATA** → **Ajouter un disque dur**.
+   - Crée un nouveau disque virtuel :
+     - Type : VDI
+     - Taille : 10 Go
+3. Démarre la VM.
+
+### 3. Partitionner et formater le disque dans la VM
+
+Après le démarrage de la VM, il faut configurer le nouveau disque dans Ubuntu.
+
+#### Étapes :
+
+1. **Lister les disques disponibles** :
+   ```bash
+   sudo fdisk -l
+   ```
+
+   Cherche le nouveau disque (probablement quelque chose comme `/dev/sdb`).
+
+2. **Partitionner le disque** :
+   - Lance `fdisk` pour créer une partition :
+     ```bash
+     sudo fdisk /dev/sdb
+     ```
+   - Utilise les commandes suivantes :
+     - `n` pour créer une nouvelle partition.
+     - `p` pour une partition primaire.
+     - `1` pour la première partition.
+     - Accepte les valeurs par défaut.
+     - `w` pour écrire les changements.
+
+3. **Formater la partition en ext4** :
+   ```bash
+   sudo mkfs.ext4 /dev/sdb1
+   ```
+
+4. **Créer le répertoire pour monter le disque** :
+   ```bash
+   sudo mkdir -p /DATA/zookeeper
+   ```
+
+5. **Monter le disque** :
+   ```bash
+   sudo mount /dev/sdb1 /DATA/zookeeper
+   ```
+
+6. **Vérifier que le disque est monté** :
+   ```bash
+   df -h
+   ```
+
+### 4. Monter automatiquement le disque au démarrage
+
+Pour que le disque soit monté automatiquement au démarrage, il faut modifier le fichier `/etc/fstab`.
+
+1. **Obtenir l'UUID du disque** :
+   ```bash
+   sudo blkid /dev/sdb1
+   ```
+
+2. **Éditer le fichier `/etc/fstab`** :
+   - Ouvre `/etc/fstab` avec un éditeur :
+     ```bash
+     sudo nano /etc/fstab
+     ```
+   - Ajoute la ligne suivante à la fin du fichier :
+     ```
+     UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx /DATA/zookeeper ext4 defaults 0 2
+     ```
+     (Remplace `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` par l'UUID trouvé avec la commande `blkid`).
+
+3. **Tester la configuration** :
+   ```bash
+   sudo mount -a
+   ```
+
+   Si aucune erreur n'apparaît, le disque est correctement configuré.
+
+### Résultat
+
+Tu as maintenant une VM Ubuntu avec un disque de 10 Go monté sur le répertoire `/DATA/zookeeper`.
