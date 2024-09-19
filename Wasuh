@@ -1,0 +1,68 @@
+Pour installer **Wasuh** (anciennement OSSEC) sur Ubuntu, voici les étapes à suivre :
+
+### Étape 1 : Préparer le système
+1. **Mettez à jour vos paquets** pour s'assurer que tout est à jour :
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   ```
+
+2. **Installer les dépendances** nécessaires :
+   ```bash
+   sudo apt install curl apt-transport-https unzip wget lsb-release software-properties-common gnupg2 -y
+   ```
+
+### Étape 2 : Ajouter le dépôt de Wazuh
+1. **Téléchargez la clé GPG** du dépôt :
+   ```bash
+   curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | sudo gpg --dearmor -o /usr/share/keyrings/wazuh-archive-keyring.gpg
+   ```
+
+2. **Ajoutez le dépôt Wazuh** à votre liste de sources :
+   ```bash
+   echo "deb [signed-by=/usr/share/keyrings/wazuh-archive-keyring.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | sudo tee /etc/apt/sources.list.d/wazuh.list
+   ```
+
+### Étape 3 : Installation de Wazuh Manager
+1. **Mettez à jour les paquets** pour inclure le dépôt de Wazuh :
+   ```bash
+   sudo apt update
+   ```
+
+2. **Installez Wazuh Manager** :
+   ```bash
+   sudo apt install wazuh-manager
+   ```
+
+### Étape 4 : Installation de Wazuh Agent (facultatif si vous voulez seulement un manager)
+1. **Installer Wazuh Agent** :
+   ```bash
+   sudo apt install wazuh-agent
+   ```
+
+### Étape 5 : Configurer Wazuh
+- **Configurer le fichier `/var/ossec/etc/ossec.conf`** pour ajuster les paramètres du manager et de l'agent.
+- **Démarrer les services** :
+   ```bash
+   sudo systemctl enable wazuh-manager
+   sudo systemctl start wazuh-manager
+   sudo systemctl enable wazuh-agent
+   sudo systemctl start wazuh-agent
+   ```
+
+### Étape 6 : Vérifier l'installation
+Vous pouvez vérifier que Wazuh est correctement installé et en fonctionnement avec les commandes suivantes :
+```bash
+sudo systemctl status wazuh-manager
+sudo systemctl status wazuh-agent
+```
+
+### Étape 7 : (Facultatif) Installation de Wazuh Kibana Plugin
+Si vous utilisez Elasticsearch et Kibana pour visualiser les données :
+1. Suivez les instructions pour [installer Elasticsearch et Kibana](https://documentation.wazuh.com/current/installation-guide/installing-elastic-stack/index.html).
+
+2. Installez le plugin Kibana pour Wazuh :
+   ```bash
+   sudo apt install wazuh-kibana
+   ```
+
+Voilà ! Vous avez installé Wazuh sur votre système Ubuntu.
