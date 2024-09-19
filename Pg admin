@@ -1,0 +1,44 @@
+Pour installer pgAdmin sur Ubuntu, vous pouvez suivre ces étapes :
+
+### 1. Ajouter le dépôt pgAdmin
+Ouvrez un terminal et exécutez les commandes suivantes pour ajouter le dépôt pgAdmin et sa clé GPG :
+
+```bash
+curl https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo apt-key add
+```
+
+Ajoutez ensuite le dépôt pgAdmin dans votre liste de sources :
+
+```bash
+sudo sh -c 'echo "deb https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/ubuntu $(lsb_release -cs) pgadmin4" > /etc/apt/sources.list.d/pgadmin4.list && apt update'
+```
+
+### 2. Installer pgAdmin
+Mettez à jour les paquets disponibles et installez pgAdmin avec les commandes suivantes :
+
+#### Pour installer la version Desktop :
+
+```bash
+sudo apt install pgadmin4-desktop
+```
+
+#### Pour installer la version Web (accessible via un navigateur) :
+
+```bash
+sudo apt install pgadmin4-web
+```
+
+### 3. Configurer pgAdmin (pour la version Web)
+Après avoir installé la version web, vous devez initialiser le serveur pgAdmin avec cette commande :
+
+```bash
+sudo /usr/pgadmin4/bin/setup-web.sh
+```
+
+Suivez les instructions à l'écran pour configurer l'accès (mot de passe administrateur, etc.).
+
+### 4. Lancer pgAdmin
+- **Version Desktop** : Vous pouvez lancer pgAdmin via votre interface graphique ou en exécutant `pgadmin4` dans le terminal.
+- **Version Web** : Vous pouvez accéder à pgAdmin via un navigateur à l’adresse `http://127.0.0.1/pgadmin4`.
+
+C'est tout ! pgAdmin devrait maintenant être installé et prêt à être utilisé sur votre machine Ubuntu.
