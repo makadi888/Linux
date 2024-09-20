@@ -1,0 +1,33 @@
+Sur CentOS, la procédure est légèrement différente mais suit les mêmes principes. Voici les étapes pour créer un utilisateur et l'ajouter au groupe `sudo` (appelé `wheel` sur CentOS pour les droits administratifs) :
+
+1. **Créer un utilisateur** avec la commande suivante. Remplacez `nom_utilisateur` par le nom souhaité pour l'utilisateur :
+   ```bash
+   sudo adduser nom_utilisateur
+   ```
+
+2. **Définir un mot de passe pour cet utilisateur** :
+   ```bash
+   sudo passwd nom_utilisateur
+   ```
+
+3. **Ajouter l'utilisateur au groupe `wheel`** pour lui donner les privilèges administratifs (équivalent au groupe `sudo` sur d'autres distributions) :
+   ```bash
+   sudo usermod -aG wheel nom_utilisateur
+   ```
+
+4. **Vérifier que l'utilisateur fait bien partie du groupe `wheel`** :
+   ```bash
+   groups nom_utilisateur
+   ```
+
+5. **Tester les droits `sudo`** :
+   Connectez-vous avec le nouvel utilisateur :
+   ```bash
+   su - nom_utilisateur
+   ```
+   Ensuite, exécutez une commande avec `sudo` pour vérifier les privilèges :
+   ```bash
+   sudo commande_à_tester
+   ```
+
+Cela permet d'attribuer à un utilisateur des droits d'administrateur sur un système CentOS.
