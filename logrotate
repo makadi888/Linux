@@ -1,0 +1,71 @@
+Pour configurer **logrotate** sur Ubuntu 22.04 LTS pour un fichier de log spécifique nommé `/var/log/apache2/xxxx.api`, avec une rotation journalière et une rétention d'un an (365 jours), voici les étapes à suivre.
+
+### 1. Créer un fichier de configuration spécifique à `xxxx.api`
+
+Créez un fichier de configuration dans le dossier `/etc/logrotate.d/` pour gérer spécifiquement le log `/var/log/apache2/xxxx.api`.
+
+Exécutez la commande suivante pour créer le fichier de configuration :
+
+```bash
+sudo nano /etc/logrotate.d/xxx.api
+```
+
+### 2. Exemple de configuration pour `xxxx.api`
+
+Ajoutez cette configuration dans le fichier créé :
+
+```bash
+/var/log/apache2/xxxxx.api {
+    daily                 # Rotation journalière
+    missingok             # Ignore le fichier si absent, évite les erreurs
+    rotate 365            # Garde les logs pendant 365 jours (1 an)
+    compress              # Compresser les logs après rotation
+    delaycompress         # Ne compresse pas le fichier le jour même
+    notifempty            # Ne pas faire de rotation si le fichier est vide
+    create 640 root adm   # Crée les nouveaux fichiers de log avec les permissions spécifiées
+    sharedscripts         # Exécute le script une seule fois même s'il y a plusieurs fichiers
+
+    postrotate
+        # Commande à exécuter après la rotation (recharge Apache pour créer un nouveau fichier de log)
+        if [ -f /var/run/apache2.pid ]; then
+            systemctl reload apache2 > /dev/null
+        fi
+    endscript
+}
+```
+
+### Explication des paramètres :
+
+- **`/var/log/apache2/xxxx.api`** : Spécifie le fichier de log à gérer.
+- **`daily`** : Effectue une rotation quotidienne des logs.
+- **`missingok`** : Si le fichier est manquant, logrotate n'affichera pas d'erreur.
+- **`rotate 365`** : Conserve les 365 dernières rotations, ce qui correspond à une rétention d'un an.
+- **`compress`** : Les anciens fichiers de log seront compressés pour économiser de l'espace disque.
+- **`delaycompress`** : Ne compresse pas immédiatement le fichier le jour même de la rotation, mais seulement lors du prochain cycle de rotation.
+- **`notifempty`** : Ne fait rien si le fichier est vide.
+- **`create 640 root adm`** : Après chaque rotation, crée un nouveau fichier de log avec les permissions 640, appartenant à `root` et au groupe `adm`.
+- **`postrotate`/`endscript`** : Recharge Apache après la rotation des logs pour garantir qu'un nouveau fichier de log est créé.
+
+### 3. Tester la configuration
+
+Après avoir sauvegardé et fermé le fichier, vous pouvez tester la configuration de logrotate pour voir si elle est correcte.
+
+Pour exécuter un test (sans réellement effectuer de rotation) :
+
+```bash
+sudo logrotate -d /etc/logrotate.d/xxxx.api
+```
+
+Si tout semble correct, vous pouvez forcer la rotation pour tester son fonctionnement réel :
+
+```bash
+sudo logrotate -f /etc/logrotate.d/datahub.api
+```
+
+### 4. Vérification des logs
+
+Les logs compressés et tournés se trouveront dans le répertoire `/var/log/apache2/`, sous forme de fichiers nommés `datahub.api.1.gz`, `xxxx.api.2.gz`, etc., pour les versions précédentes.
+
+### Conclusion
+
+Avec cette configuration, les logs spécifiques à `datahub.api` seront tournés quotidiennement, compressés et conservés pendant un an, sans encombrer le système de fichiers.
