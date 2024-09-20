@@ -1,0 +1,63 @@
+Pour configurer **logrotate** afin de gérer tous les fichiers de logs dans le répertoire `/var/log/apache2/` et ses sous-répertoires, avec une rotation journalière et une rétention d'un an (365 jours), vous pouvez créer ou éditer un fichier de configuration spécifique dans `/etc/logrotate.d/`. Voici les étapes à suivre.
+
+### 1. Créer ou éditer la configuration dans `/etc/logrotate.d/apache2`
+
+Ouvrez ou créez un fichier de configuration pour Apache2 dans le dossier `logrotate.d` :
+
+```bash
+sudo nano /etc/logrotate.d/apache2
+```
+
+### 2. Exemple de configuration pour gérer tous les fichiers de `/var/log/apache2/` et ses sous-dossiers
+
+Ajoutez la configuration suivante :
+
+```bash
+/var/log/apache2/*.log /var/log/apache2/**/*.log {
+    daily                 # Rotation journalière
+    missingok             # Ignore le fichier si absent, évite les erreurs
+    rotate 365            # Garde les logs pendant 365 jours (1 an)
+    compress              # Compresser les logs après rotation
+    delaycompress         # Ne compresse pas les logs le jour même
+    notifempty            # Ne pas faire de rotation si les fichiers sont vides
+    sharedscripts         # Exécute les scripts une seule fois, même pour plusieurs fichiers
+
+    postrotate
+        # Commande à exécuter après la rotation (recharger Apache)
+        if [ -f /var/run/apache2.pid ]; then
+            systemctl reload apache2 > /dev/null
+        fi
+    endscript
+}
+```
+
+### Explication des paramètres :
+
+- **`/var/log/apache2/*.log`** : Cible tous les fichiers de logs dans le dossier `/var/log/apache2/` ayant l'extension `.log`.
+- **`/var/log/apache2/**/*.log`** : Cible tous les fichiers `.log` dans les sous-répertoires de `/var/log/apache2/` (grâce à la syntaxe `**`).
+- **`daily`** : Rotation des logs quotidiennement.
+- **`missingok`** : Si un fichier est manquant, ne génère pas d'erreur.
+- **`rotate 365`** : Conserve les 365 dernières rotations, soit une rétention d'un an.
+- **`compress`** : Compresse les fichiers après rotation pour économiser de l'espace.
+- **`delaycompress`** : Ne compresse pas immédiatement le fichier le jour même, mais au prochain cycle de rotation.
+- **`notifempty`** : Ignore les fichiers vides.
+- **`sharedscripts`** : Exécute les scripts de post-rotation une seule fois, même s'il y a plusieurs fichiers.
+- **`postrotate`** : Recharge Apache après la rotation pour garantir la création de nouveaux fichiers de log.
+
+### 3. Tester la configuration
+
+Pour vérifier si la configuration est correcte sans effectuer de rotation réelle, utilisez cette commande de test en mode debug :
+
+```bash
+sudo logrotate -d /etc/logrotate.d/apache2
+```
+
+Si le test ne présente pas d'erreurs, vous pouvez forcer une rotation manuelle pour vous assurer que tout fonctionne :
+
+```bash
+sudo logrotate -f /etc/logrotate.d/apache2
+```
+
+### 4. Conclusion
+
+Avec cette configuration, **tous les fichiers de log** dans `/var/log/apache2/` et ses sous-répertoires seront automatiquement tournés chaque jour, compressés, et conservés pendant **un an**. Les fichiers de log plus anciens que 365 jours seront supprimés pour éviter d'encombrer le disque.
