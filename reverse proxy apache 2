@@ -1,0 +1,135 @@
+L'installation et la configuration d'Apache en tant que **reverse proxy** sur **Ubuntu** sont similaires à celles sur d'autres systèmes Linux. Voici les étapes détaillées spécifiques pour Ubuntu.
+
+### Étape 1: Installation d'Apache sur Ubuntu
+
+1. **Mettre à jour votre système** :
+
+   ```bash
+   sudo apt update
+   sudo apt upgrade
+   ```
+
+2. **Installer Apache** :
+
+   ```bash
+   sudo apt install apache2
+   ```
+
+### Étape 2: Activer les modules nécessaires
+
+Pour qu'Apache fonctionne en tant que reverse proxy, il est essentiel d'activer les modules `proxy` et `proxy_http`.
+
+1. **Activer les modules proxy** :
+
+   ```bash
+   sudo a2enmod proxy
+   sudo a2enmod proxy_http
+   sudo a2enmod proxy_balancer
+   sudo a2enmod lbmethod_byrequests
+   ```
+
+2. **Redémarrer Apache** pour que les modules soient pris en compte :
+
+   ```bash
+   sudo systemctl restart apache2
+   ```
+
+### Étape 3: Configurer un hôte virtuel pour le reverse proxy
+
+1. **Créer un nouveau fichier de configuration d'hôte virtuel** dans le répertoire `/etc/apache2/sites-available`. Par exemple, créez un fichier nommé `proxy.conf` :
+
+   ```bash
+   sudo nano /etc/apache2/sites-available/proxy.conf
+   ```
+
+2. **Ajouter la configuration suivante** pour rediriger le trafic vers un serveur interne (par exemple `http://192.168.1.100`). Vous pouvez remplacer l'adresse IP avec l'adresse de votre serveur cible.
+
+   ```apache
+   <VirtualHost *:80>
+       ServerName exemple.com
+
+       # Redirection des requêtes vers le serveur interne
+       ProxyPass "/" "http://192.168.1.100/"
+       ProxyPassReverse "/" "http://192.168.1.100/"
+
+       # Optionnel : exclure certains chemins du proxy
+       ProxyPass "/local" "!"
+   </VirtualHost>
+   ```
+
+   - `ProxyPass` : Redirige toutes les requêtes vers `/` vers le serveur interne spécifié.
+   - `ProxyPassReverse` : Garantit que les réponses du serveur cible sont correctement renvoyées aux clients.
+
+3. **Activer le site** que vous venez de configurer :
+
+   ```bash
+   sudo a2ensite proxy.conf
+   ```
+
+4. **Désactiver le site par défaut** si vous ne l'utilisez pas :
+
+   ```bash
+   sudo a2dissite 000-default.conf
+   ```
+
+5. **Redémarrer Apache** pour appliquer les modifications :
+
+   ```bash
+   sudo systemctl restart apache2
+   ```
+
+### Étape 4: Ajouter le support SSL (Optionnel)
+
+Pour sécuriser le serveur avec SSL, il est recommandé de configurer un certificat TLS/SSL. Vous pouvez utiliser **Let's Encrypt** pour obtenir gratuitement un certificat.
+
+1. **Activer le module SSL** dans Apache :
+
+   ```bash
+   sudo a2enmod ssl
+   ```
+
+2. **Installer Certbot** (outil de génération de certificats SSL via Let's Encrypt) :
+
+   ```bash
+   sudo apt install certbot python3-certbot-apache
+   ```
+
+3. **Obtenir un certificat SSL** pour votre domaine :
+
+   ```bash
+   sudo certbot --apache -d exemple.com
+   ```
+
+   Suivez les instructions pour configurer automatiquement le certificat.
+
+4. **Redémarrer Apache** après l'installation du certificat :
+
+   ```bash
+   sudo systemctl restart apache2
+   ```
+
+### Étape 5: Vérification
+
+Une fois la configuration terminée, vous pouvez tester l'accès à votre domaine (par exemple `http://exemple.com`). Si tout fonctionne correctement, les requêtes vers ce domaine seront redirigées vers le serveur interne que vous avez spécifié.
+
+### Récapitulatif des commandes clés
+
+```bash
+sudo apt update
+sudo apt install apache2
+sudo a2enmod proxy proxy_http proxy_balancer lbmethod_byrequests
+sudo nano /etc/apache2/sites-available/proxy.conf
+sudo a2ensite proxy.conf
+sudo systemctl restart apache2
+```
+
+Si vous avez configuré le SSL :
+
+```bash
+sudo a2enmod ssl
+sudo apt install certbot python3-certbot-apache
+sudo certbot --apache -d exemple.com
+sudo systemctl restart apache2
+```
+
+Vous avez maintenant un serveur Apache configuré en tant que **reverse proxy** sur Ubuntu !
