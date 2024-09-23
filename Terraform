@@ -1,0 +1,136 @@
+Pour créer 4 machines virtuelles (VM) Ubuntu sur VMware en utilisant Terraform, vous pouvez suivre ces étapes. Vous aurez besoin de Terraform, d'un environnement VMware fonctionnel (comme vSphere), et des configurations d'accès appropriées (nom d'utilisateur, mot de passe, etc.).
+
+### Prérequis
+
+1. **Installer Terraform** : Si ce n’est pas déjà fait, installez Terraform sur votre machine.
+   - Instructions d’installation : https://learn.hashicorp.com/tutorials/terraform/install-cli
+
+2. **Installer le provider VMware vSphere pour Terraform** :
+   - Terraform supporte VMware vSphere via un provider officiel, donc vous devez inclure ce provider dans votre configuration.
+
+3. **Accès à vSphere** : Vous aurez besoin d’un serveur VMware vSphere avec les privilèges requis pour créer des VMs.
+
+### Étapes de configuration
+
+1. **Initialiser un nouveau projet Terraform** :
+   Créez un nouveau dossier et initialisez Terraform avec la commande `terraform init`.
+
+2. **Fichier de configuration Terraform (main.tf)** : Créez un fichier `main.tf` avec le contenu suivant.
+
+### Exemple de fichier `main.tf` pour 4 VMs Ubuntu sur VMware
+
+```hcl
+provider "vsphere" {
+  user           = "vSphere_username"
+  password       = "vSphere_password"
+  vsphere_server = "vSphere_server_url"
+  allow_unverified_ssl = true
+}
+
+data "vsphere_datacenter" "dc" {
+  name = "datacenter_name"
+}
+
+data "vsphere_datastore" "datastore" {
+  name          = "datastore_name"
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+data "vsphere_compute_cluster" "cluster" {
+  name          = "cluster_name"
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+data "vsphere_network" "network" {
+  name          = "network_name"
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+data "vsphere_virtual_machine" "template" {
+  name          = "ubuntu_template_name"
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+resource "vsphere_virtual_machine" "ubuntu_vm" {
+  count            = 4
+  name             = "ubuntu-vm-${count.index + 1}"
+  resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
+  datastore_id     = data.vsphere_datastore.datastore.id
+
+  num_cpus = 2
+  memory   = 4096
+  guest_id = data.vsphere_virtual_machine.template.guest_id
+
+  network_interface {
+    network_id   = data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.template.network_interface_types[0]
+  }
+
+  disk {
+    label            = "disk0"
+    size             = data.vsphere_virtual_machine.template.disks.0.size
+    thin_provisioned = true
+  }
+
+  clone {
+    template_uuid = data.vsphere_virtual_machine.template.id
+
+    customize {
+      linux_options {
+        host_name = "ubuntu-vm-${count.index + 1}"
+        domain    = "local"
+      }
+
+      network_interface {
+        ipv4_address = "192.168.1.${count.index + 10}"
+        ipv4_netmask = 24
+      }
+
+      ipv4_gateway = "192.168.1.1"
+    }
+  }
+}
+
+output "vm_ips" {
+  value = [for i in vsphere_virtual_machine.ubuntu_vm : i.network_interface[0].ipv4_address]
+}
+```
+
+### Explication du code :
+
+- **Provider** : Vous configurez le provider `vsphere` avec votre serveur vSphere, votre nom d'utilisateur et votre mot de passe.
+- **Ressources** :
+  - **vsphere_datacenter** : Spécifie le datacenter où vous créez vos VMs.
+  - **vsphere_datastore** : Le datastore utilisé pour stocker les disques virtuels.
+  - **vsphere_compute_cluster** : Le cluster où seront déployées les VMs.
+  - **vsphere_network** : Le réseau auquel vos VMs seront connectées.
+  - **vsphere_virtual_machine** : Utilise un template Ubuntu pour cloner 4 VMs avec un comptage basé sur l’index Terraform.
+  - **clone** : Permet de personnaliser les VMs (nom d'hôte, adresse IP, etc.) lors du clonage depuis le template.
+  
+- **`count`** : Terraform utilise cette fonction pour créer 4 machines virtuelles avec des adresses IP différentes.
+
+- **Output** : Cet exemple affiche les adresses IP des VMs créées à la fin du processus.
+
+### Étapes pour exécuter ce code :
+
+1. **Initialiser Terraform** : 
+   ```bash
+   terraform init
+   ```
+
+2. **Planifier la création des VMs** :
+   ```bash
+   terraform plan
+   ```
+
+3. **Appliquer le plan et créer les VMs** :
+   ```bash
+   terraform apply
+   ```
+
+### Remarques :
+- Vous devez avoir un modèle (template) Ubuntu déjà configuré dans votre vSphere.
+- Vous pouvez ajuster les paramètres (CPU, mémoire, disque) selon vos besoins.
+- Modifiez les paramètres réseau (`network_name`, adresses IP, etc.) selon votre environnement.
+
+Cela créera 4 VMs Ubuntu dans votre infrastructure VMware avec Terraform.
