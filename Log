@@ -1,0 +1,65 @@
+Pour inclure les sous-dossiers dans la rotation des logs avec **logrotate**, vous devez ajuster votre configuration pour qu'elle prenne en compte non seulement les fichiers logs dans `/var/log/apache2/`, mais aussi ceux dans tous ses sous-dossiers. Le problème que vous avez rencontré provient du fait que la configuration par défaut ne descend pas récursivement dans les sous-dossiers.
+
+### Solution : Inclure les sous-dossiers dans la rotation
+
+Modifions votre configuration pour qu'elle prenne en compte tous les fichiers de logs, y compris ceux des sous-dossiers de `/var/log/apache2/`.
+
+### 1. Ouvrir le fichier de configuration de logrotate
+
+Ouvrez ou créez le fichier de configuration pour Apache2 dans `/etc/logrotate.d/apache2` :
+
+```bash
+sudo nano /etc/logrotate.d/apache2
+```
+
+### 2. Exemple de configuration pour inclure les sous-dossiers
+
+Voici une configuration mise à jour pour gérer tous les fichiers de log dans `/var/log/apache2/` et **tous ses sous-dossiers** :
+
+```bash
+/var/log/apache2/**/*.log {
+    daily                 # Rotation journalière
+    missingok             # Ignore le fichier si absent, évite les erreurs
+    rotate 365            # Garde les logs pendant 365 jours (1 an)
+    compress              # Compresser les logs après rotation
+    delaycompress         # Ne compresse pas les logs le jour même
+    notifempty            # Ne pas faire de rotation si les fichiers sont vides
+    create 640 root adm   # Crée les nouveaux fichiers avec les permissions spécifiées
+    sharedscripts         # Exécute les scripts une seule fois même s'il y a plusieurs fichiers
+
+    postrotate
+        # Recharger Apache pour qu'il recrée de nouveaux fichiers de log après la rotation
+        if [ -f /var/run/apache2.pid ]; then
+            systemctl reload apache2 > /dev/null
+        fi
+    endscript
+}
+```
+
+### Explication de la mise à jour
+
+- **`/var/log/apache2/**/*.log`** : Le double astérisque `**` est utilisé pour inclure les fichiers logs situés dans **tous les sous-dossiers** de `/var/log/apache2/`. Cela signifie que tous les fichiers `.log` dans `/var/log/apache2/` ainsi que dans **tous les sous-dossiers** seront pris en compte.
+  
+  - Par exemple : `/var/log/apache2/xxx/*.log` sera inclus.
+
+Le reste de la configuration reste le même pour gérer la rotation journalière, la compression des logs et la rétention sur 365 jours.
+
+### 3. Tester la configuration
+
+Une fois la configuration mise à jour, vous pouvez la tester en mode debug pour voir si tout fonctionne correctement :
+
+```bash
+sudo logrotate -d /etc/logrotate.d/apache2
+```
+
+Cela n'effectuera pas de rotation réelle, mais vérifiera si la configuration fonctionne comme prévu.
+
+Si tout est correct, vous pouvez forcer une rotation pour tester son fonctionnement :
+
+```bash
+sudo logrotate -f /etc/logrotate.d/apache2
+```
+
+### 4. Conclusion
+
+Avec cette configuration, **tous les fichiers de log** dans `/var/log/apache2/` ainsi que **dans tous ses sous-dossiers** (comme `/var/log/apache2/xxx`) seront pris en compte par logrotate, et seront tournés chaque jour avec une rétention d'un an.
