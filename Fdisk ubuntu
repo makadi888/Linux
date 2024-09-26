@@ -1,0 +1,92 @@
+Pour augmenter l'espace disque de la partition `/var/log` sur une installation Ubuntu utilisant LVM (Logical Volume Manager), voici les étapes à suivre. Elles impliquent l'augmentation d'un volume logique (LVM) existant. Il est recommandé d'effectuer une sauvegarde avant toute modification de vos partitions ou volumes logiques.
+
+### Étape 1 : Vérifier l'espace disponible sur le disque
+Avant de commencer, vérifiez la configuration actuelle de vos volumes et l'espace disque disponible.
+
+1. Listez les volumes physiques (disques gérés par LVM) avec :
+   ```bash
+   sudo pvs
+   ```
+
+2. Listez les volumes logiques (y compris celui où se trouve `/var/log`) :
+   ```bash
+   sudo lvs
+   ```
+
+3. Vérifiez la taille et l'occupation des systèmes de fichiers :
+   ```bash
+   df -h
+   ```
+
+### Étape 2 : Étendre le volume physique (si nécessaire)
+Si vous avez ajouté de l'espace à votre disque physique (par exemple avec `fdisk` ou via un disque virtuel), vous devez l'ajouter au groupe de volumes LVM.
+
+1. Vérifiez les partitions disponibles :
+   ```bash
+   sudo fdisk -l
+   ```
+
+2. Si vous avez une nouvelle partition disponible (par exemple `/dev/sdaX`), vous pouvez l'ajouter au groupe de volumes LVM :
+   ```bash
+   sudo pvcreate /dev/sdaX
+   sudo vgextend <nom_du_groupe_de_volumes> /dev/sdaX
+   ```
+   Remplacez `<nom_du_groupe_de_volumes>` par le nom de votre groupe de volumes (visible via `sudo vgs`).
+
+### Étape 3 : Étendre le volume logique
+Maintenant que vous avez de l'espace disponible dans votre groupe de volumes, vous pouvez étendre le volume logique qui contient `/var/log`.
+
+1. Pour identifier le nom du volume logique contenant `/var/log` :
+   ```bash
+   sudo lvdisplay
+   ```
+
+2. Une fois que vous avez identifié le volume logique, augmentez sa taille. Par exemple, pour ajouter 5 Go :
+   ```bash
+   sudo lvextend -L +5G /dev/<nom_du_groupe_de_volumes>/<nom_du_volume_logique>
+   ```
+   Remplacez `<nom_du_groupe_de_volumes>` et `<nom_du_volume_logique>` par les valeurs correctes.
+
+### Étape 4 : Redimensionner le système de fichiers
+Après avoir étendu le volume logique, vous devez redimensionner le système de fichiers pour utiliser l'espace ajouté.
+
+1. Si le système de fichiers est ext4 ou ext3, utilisez la commande suivante pour redimensionner à chaud (sans démonter le volume) :
+   ```bash
+   sudo resize2fs /dev/<nom_du_groupe_de_volumes>/<nom_du_volume_logique>
+   ```
+
+2. Si vous utilisez un autre type de système de fichiers (par exemple `xfs`), utilisez la commande appropriée, comme :
+   ```bash
+   sudo xfs_growfs /var/log
+   ```
+
+### Étape 5 : Vérification
+Enfin, vérifiez que le volume a bien été étendu et que le système de fichiers utilise l'espace supplémentaire :
+
+1. Affichez de nouveau l'utilisation du disque :
+   ```bash
+   df -h
+   ```
+
+Vous devriez voir que l'espace disponible pour `/var/log` a augmenté.
+
+### Exemple de commandes :
+
+Voici un exemple de séquence de commandes pour étendre l'espace disque :
+
+```bash
+# Ajouter une nouvelle partition au groupe de volumes
+sudo pvcreate /dev/sda3
+sudo vgextend vg0 /dev/sda3
+
+# Étendre le volume logique
+sudo lvextend -L +5G /dev/vg0/log
+
+# Redimensionner le système de fichiers
+sudo resize2fs /dev/vg0/log
+
+# Vérifier l'espace
+df -h /var/log
+```
+
+En suivant ces étapes, vous devriez pouvoir augmenter l'espace disponible pour votre répertoire `/var/log`.
