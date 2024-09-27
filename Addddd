@@ -1,0 +1,111 @@
+Il semble que vous rencontriez un problème lié à l'intégration d'un serveur Ubuntu dans un domaine Windows Active Directory (AD). Le processus implique plusieurs outils comme **`kinit`**, **`klist`**, **`net ads`** pour l'intégration via **Kerberos** et **Samba**. Voici un guide pour résoudre ce type de problème.
+
+### 1. Vérifier les prérequis
+Assurez-vous que votre serveur Ubuntu est configuré correctement avec les éléments suivants :
+
+- Le serveur a un nom d'hôte complètement qualifié (FQDN). Vous pouvez vérifier cela avec :
+  ```bash
+  hostnamectl
+  ```
+- Le serveur est capable de résoudre les noms DNS du domaine Windows. Vous pouvez tester cela en utilisant :
+  ```bash
+  nslookup domain.local
+  ```
+
+### 2. Configurer `/etc/hosts`
+Votre fichier `/etc/hosts` doit comporter une ligne correspondant au FQDN de la machine :
+```bash
+127.0.1.1   ubuntu-server.domain.local ubuntu-server
+```
+
+### 3. Installer les paquets nécessaires
+Les outils Kerberos, Samba, et Winbind doivent être installés :
+```bash
+sudo apt update
+sudo apt install samba krb5-user winbind libpam-winbind libnss-winbind
+```
+Pendant l'installation, il vous sera demandé le nom de votre domaine. Assurez-vous d'utiliser le bon domaine (par exemple : `domain.local`).
+
+### 4. Configuration de Kerberos
+Modifiez le fichier `/etc/krb5.conf` pour qu'il corresponde à la configuration de votre domaine Active Directory.
+
+Exemple de configuration :
+```bash
+[libdefaults]
+    default_realm = DOMAIN.LOCAL
+    dns_lookup_realm = false
+    dns_lookup_kdc = true
+
+[realms]
+    DOMAIN.LOCAL = {
+        kdc = dc1.domain.local
+        admin_server = dc1.domain.local
+    }
+
+[domain_realm]
+    .domain.local = DOMAIN.LOCAL
+    domain.local = DOMAIN.LOCAL
+```
+
+### 5. Tester Kerberos avec `kinit` et `klist`
+Vous devez obtenir un ticket Kerberos avant de rejoindre le domaine. Utilisez :
+```bash
+kinit administrateur@DOMAIN.LOCAL
+```
+Puis vérifiez le ticket avec :
+```bash
+klist
+```
+Si cela échoue, vérifiez les logs dans `/var/log/syslog` ou `/var/log/auth.log`.
+
+### 6. Configuration de Samba
+Modifiez le fichier `/etc/samba/smb.conf` avec les informations du domaine :
+```bash
+[global]
+   workgroup = DOMAIN
+   security = ADS
+   realm = DOMAIN.LOCAL
+   encrypt passwords = yes
+
+   idmap config * : backend = tdb
+   idmap config DOMAIN:backend = rid
+   idmap config DOMAIN:range = 10000-20000
+
+   winbind use default domain = yes
+   winbind offline logon = yes
+   winbind nss info = rfc2307
+   winbind enum users = yes
+   winbind enum groups = yes
+
+   template shell = /bin/bash
+   template homedir = /home/%D/%U
+```
+
+### 7. Joindre le domaine avec `net ads join`
+Utilisez la commande suivante pour joindre le serveur Ubuntu au domaine AD :
+```bash
+sudo net ads join -U administrateur
+```
+Si cela réussit, vous devriez obtenir un message indiquant que le serveur a été ajouté au domaine.
+
+### 8. Vérifier l'intégration
+Vous pouvez vérifier que l'intégration s'est faite correctement avec les commandes suivantes :
+```bash
+wbinfo -u  # Lister les utilisateurs du domaine
+wbinfo -g  # Lister les groupes du domaine
+```
+
+Vous pouvez aussi vérifier la présence du serveur dans l'Active Directory du côté Windows.
+
+### 9. Problèmes courants
+- **Problème de DNS :** Assurez-vous que le serveur Ubuntu peut résoudre le contrôleur de domaine via DNS.
+- **Synchronisation de l'horloge :** Kerberos est très sensible aux écarts de temps. Assurez-vous que l'horloge du serveur Ubuntu est synchronisée avec le serveur AD (utilisez NTP si nécessaire).
+- **Problèmes de droits :** Assurez-vous que l'utilisateur utilisé pour joindre le domaine (par exemple, `administrateur`) a les droits nécessaires dans l'Active Directory.
+
+### 10. Redémarrer les services
+Une fois que le serveur est joint au domaine, redémarrez les services pour appliquer les modifications :
+```bash
+sudo systemctl restart smbd nmbd winbind
+```
+
+Si après cela, vous rencontrez toujours des erreurs, je vous recommande de fournir des détails spécifiques sur les messages d'erreur que vous recevez lors de l'exécution de commandes telles que **`kinit`**, **`net ads join`**, etc., afin de pouvoir diagnostiquer plus précisément le problème.
