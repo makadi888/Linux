@@ -1,0 +1,39 @@
+Si la commande `usermod -aG` indique une option invalide sous SUSE Linux, il pourrait s'agir d'une différence de version de l'outil `usermod`. Essayez une autre méthode pour ajouter un utilisateur à un groupe.
+
+### Méthode Alternative 1 : `gpasswd`
+Vous pouvez utiliser la commande `gpasswd` pour ajouter un utilisateur à un groupe :
+
+```bash
+sudo gpasswd -a <nom_de_l'utilisateur> <nom_du_groupe>
+```
+
+Par exemple, pour ajouter l'utilisateur `alice` au groupe `developers` :
+
+```bash
+sudo gpasswd -a alice developers
+```
+
+### Méthode Alternative 2 : Modifier `/etc/group`
+Une autre méthode consiste à éditer le fichier `/etc/group` directement pour ajouter un utilisateur à un groupe spécifique. Vous pouvez faire cela en utilisant un éditeur de texte comme `vi`, `nano`, ou autre :
+
+1. Ouvrez le fichier `/etc/group` avec les privilèges root :
+
+   ```bash
+   sudo nano /etc/group
+   ```
+
+2. Cherchez la ligne correspondant au groupe auquel vous voulez ajouter l'utilisateur. Cela ressemblera à ceci :
+
+   ```
+   developers:x:1001:
+   ```
+
+3. Ajoutez simplement le nom de l'utilisateur à la fin de la ligne, séparé par une virgule. Par exemple :
+
+   ```
+   developers:x:1001:alice
+   ```
+
+4. Sauvegardez et fermez le fichier.
+
+Après cela, l'utilisateur `alice` devrait être ajouté au groupe `developers`.
