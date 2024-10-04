@@ -1,0 +1,74 @@
+Pour ajouter un nouveau utilisateur sur un système SUSE Linux et lui donner un accès SSH en lecture seule, suivez les étapes suivantes:
+
+### 1. Ajouter un Nouvel Utilisateur
+Tout d'abord, vous pouvez ajouter un nouvel utilisateur en utilisant la commande suivante (remplacez `<nom_utilisateur>` par le nom de l'utilisateur désiré) :
+
+```bash
+sudo useradd -m -s /bin/bash <nom_utilisateur>
+```
+
+Ensuite, définissez un mot de passe pour ce nouvel utilisateur :
+
+```bash
+sudo passwd <nom_utilisateur>
+```
+
+Cette commande vous invitera à entrer un mot de passe pour l'utilisateur.
+
+### 2. Configurer l'Accès SSH
+Pour que cet utilisateur puisse se connecter via SSH, assurez-vous que le service SSH est activé et en cours d'exécution. Vérifiez ou modifiez le fichier de configuration SSH (`/etc/ssh/sshd_config`) pour vous assurer que l'accès est autorisé.
+
+Vérifiez l'état de SSH :
+```bash
+sudo systemctl status sshd
+```
+
+### 3. Restreindre les Permissions du Nouvel Utilisateur
+Pour limiter l'accès de cet utilisateur en lecture seule, suivez ces étapes :
+
+1. **Restreindre les Droits d'Accès aux Répertoires :**
+
+   Par défaut, un utilisateur régulier n'a accès qu'en lecture à la plupart des répertoires du système. Mais pour vous assurer qu'il n'a pas de permissions d'écriture, vous pouvez restreindre son accès en :
+
+   - Vérifiant et fixant les permissions de fichiers et répertoires auxquels l'utilisateur peut accéder.
+   - Utilisant des permissions spécifiques comme `chmod` ou `chown` pour définir les autorisations sur des fichiers critiques.
+
+2. **Utiliser un Shell Limité :**
+
+   Pour que l'utilisateur ait un accès extrêmement restreint, vous pouvez lui attribuer un "restricted shell". Cela limite sa capacité à se déplacer et à effectuer certaines commandes. Utilisez `/bin/rbash` comme shell de l'utilisateur.
+
+   Modifiez l'utilisateur pour utiliser un shell restreint :
+   ```bash
+   sudo usermod -s /bin/rbash <nom_utilisateur>
+   ```
+
+3. **Configurer les Droits d'Accès en Lecture Seule pour les Répertoires Spécifiques :**
+
+   Pour empêcher un utilisateur de modifier des fichiers, assurez-vous que les fichiers ou répertoires sont accessibles en lecture seule :
+
+   ```bash
+   sudo chmod -R 755 /chemin/vers/le/repertoire
+   ```
+
+   Cela permet aux autres utilisateurs de lire les fichiers, mais pas de les modifier.
+
+### 4. Configurer SSH pour Restreindre l'Accès
+Enfin, modifiez le fichier `/etc/ssh/sshd_config` pour spécifier les utilisateurs autorisés à se connecter via SSH. Ajoutez la ligne suivante :
+
+```bash
+AllowUsers <nom_utilisateur>
+```
+
+Ensuite, redémarrez le service SSH pour appliquer les modifications :
+
+```bash
+sudo systemctl restart sshd
+```
+
+### Résumé
+- Utilisez `useradd` et `passwd` pour créer le nouvel utilisateur.
+- Utilisez un shell restreint (`/bin/rbash`) pour limiter les capacités de l'utilisateur.
+- Assurez-vous que les permissions des fichiers sont configurées en lecture seule.
+- Modifiez `sshd_config` pour restreindre l'accès SSH à certains utilisateurs.
+
+Ces mesures garantiront que l'utilisateur a un accès minimal et en lecture seule au système via SSH.
