@@ -1,0 +1,57 @@
+Il semble que vous souhaitiez gérer les accès SSH à l'aide d'un groupe dédié. Cela est tout à fait possible en créant un groupe spécifique pour les utilisateurs ayant un accès SSH. Voici comment vous pouvez procéder sur un système SUSE Linux :
+
+### 1. Créer un Groupe pour l'Accès SSH
+Commencez par créer un groupe nommé, par exemple, `sshusers`, qui sera utilisé pour regrouper tous les utilisateurs ayant un accès SSH :
+
+```bash
+sudo groupadd sshusers
+```
+
+### 2. Ajouter l'Utilisateur au Groupe SSH
+Ajoutez l'utilisateur au groupe `sshusers` :
+
+```bash
+sudo usermod -aG sshusers <nom_utilisateur>
+```
+
+Cela donne à l'utilisateur l'accès à SSH, selon la configuration que nous allons définir ensuite.
+
+### 3. Modifier la Configuration SSH pour Autoriser Seulement le Groupe `sshusers`
+Maintenant, il faut modifier la configuration SSH afin de restreindre l'accès uniquement aux membres du groupe `sshusers`. Pour cela, éditez le fichier `/etc/ssh/sshd_config` :
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+Ajoutez ou modifiez la ligne suivante pour permettre uniquement aux membres du groupe `sshusers` de se connecter via SSH :
+
+```bash
+AllowGroups sshusers
+```
+
+Cette configuration permet uniquement aux utilisateurs appartenant au groupe `sshusers` de se connecter via SSH.
+
+### 4. Redémarrer le Service SSH
+Pour appliquer ces changements, vous devez redémarrer le service SSH :
+
+```bash
+sudo systemctl restart sshd
+```
+
+### 5. Vérifier les Permissions et Accès
+Pour garantir que l'utilisateur n'a qu'un accès en lecture seule, vous pouvez ajuster les permissions des fichiers et des répertoires auxquels l'utilisateur a accès :
+
+- Assurez-vous que les fichiers sont en lecture seule (permissions de 755 pour les répertoires ou de 644 pour les fichiers) pour les utilisateurs réguliers.
+- Empêchez toute modification en assignant un shell restreint à l'utilisateur :
+
+```bash
+sudo usermod -s /bin/rbash <nom_utilisateur>
+```
+
+### Résumé des Étapes
+1. **Créer un groupe `sshusers`** : `sudo groupadd sshusers`.
+2. **Ajouter l'utilisateur au groupe** : `sudo usermod -aG sshusers <nom_utilisateur>`.
+3. **Configurer SSH pour restreindre l'accès** : Modifiez `/etc/ssh/sshd_config` pour ajouter `AllowGroups sshusers`.
+4. **Redémarrer SSH** : `sudo systemctl restart sshd`.
+
+Ces étapes vous permettront de contrôler précisément qui peut se connecter via SSH, en limitant l'accès à un groupe spécifique d'utilisateurs.
