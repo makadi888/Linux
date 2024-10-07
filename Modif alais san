@@ -1,0 +1,84 @@
+Pour modifier l'alias dans Brocade Switch (comme un commutateur de stockage SAN Brocade), vous devez utiliser les commandes disponibles dans l'interface en ligne de commande (CLI) pour le faire. Voici les étapes de base pour modifier l'alias d'un alias de port existant dans une zone d'un switch SAN Brocade :
+
+### Étapes pour modifier un alias :
+
+1. **Connexion au Switch :**
+   - Connectez-vous au switch Brocade via SSH ou via la console série pour accéder à la CLI.
+
+2. **Vérifier l'Alias Existants :**
+   - Vous pouvez vérifier les alias existants en utilisant la commande suivante :
+     ```sh
+     aliashow
+     ```
+
+3. **Créer un Nouvel Alias :**
+   - Si vous souhaitez créer un nouvel alias ou modifier un alias existant, vous pouvez utiliser la commande `alicreate` :
+     ```sh
+     alicreate "nouvel_alias", "WWN"
+     ```
+     - Remplacez `"nouvel_alias"` par le nom que vous souhaitez donner à l'alias.
+     - `"WWN"` doit être remplacé par le World Wide Name (WWN) de l’appareil concerné.
+
+4. **Modifier un Alias Existant :**
+   - Si vous devez modifier un alias existant, vous pouvez utiliser la commande `alidelete` pour le supprimer et ensuite le recréer avec le nouveau nom ou les modifications nécessaires :
+     ```sh
+     alidelete "ancien_alias"
+     ```
+     Puis créez un nouvel alias :
+     ```sh
+     alicreate "nouvel_alias", "WWN"
+     ```
+
+5. **Ajouter l'Alias Modifié dans la Zone :**
+   - Une fois que l'alias a été modifié, vous devez mettre à jour la zone correspondante pour y inclure le nouvel alias. D'abord, identifiez la zone :
+     ```sh
+     zoneshow
+     ```
+   - Puis, modifiez la zone pour remplacer l'alias existant par le nouvel alias :
+     ```sh
+     zoneremove "nom_zone", "ancien_alias"
+     ```
+     Ensuite, ajoutez le nouvel alias :
+     ```sh
+     zoneadd "nom_zone", "nouvel_alias"
+     ```
+
+6. **Enregistrer les Modifications et Activer la Configuration :**
+   - Une fois les modifications apportées, vous devez enregistrer la configuration :
+     ```sh
+     cfgsave
+     ```
+   - Enfin, activez la configuration :
+     ```sh
+     cfgenable "nom_configuration"
+     ```
+     Remplacez `"nom_configuration"` par le nom de la configuration active.
+
+### Exemple Complet :
+
+Supposons que vous ayez un alias nommé `alias_ancien` que vous souhaitez renommer en `alias_nouveau`, associé au WWN `10:00:00:00:00:00:00:01` :
+
+1. Supprimer l'ancien alias :
+   ```sh
+   alidelete "alias_ancien"
+   ```
+2. Créer le nouvel alias :
+   ```sh
+   alicreate "alias_nouveau", "10:00:00:00:00:00:00:01"
+   ```
+3. Mettre à jour la zone :
+   - Retirer l'ancien alias de la zone `zone_exemple` :
+     ```sh
+     zoneremove "zone_exemple", "alias_ancien"
+     ```
+   - Ajouter le nouvel alias à la zone :
+     ```sh
+     zoneadd "zone_exemple", "alias_nouveau"
+     ```
+4. Enregistrer et activer la configuration :
+   ```sh
+   cfgsave
+   cfgenable "configuration_exemple"
+   ```
+
+Ces étapes vous permettront de modifier l'alias d'un port ou d'un appareil dans un switch SAN Brocade. Soyez prudent, car toute modification affectant la configuration du zoning peut perturber la connectivité des hôtes si elle n'est pas faite correctement.
