@@ -1,0 +1,108 @@
+Pour augmenter un disque sur LVM dans un système Ubuntu où le volume logique (LV) est déjà créé, voici les étapes générales à suivre :
+
+### 1. **Ajouter un nouveau disque (si nécessaire)**
+Si vous avez ajouté un nouveau disque physique (par exemple `/dev/sdb`), commencez par le vérifier avec la commande suivante :
+
+```bash
+sudo fdisk -l
+```
+
+Assurez-vous que le nouveau disque est visible et prêt à être utilisé.
+
+### 2. **Créer une partition LVM sur le nouveau disque (si nécessaire)**
+Si vous souhaitez utiliser ce disque avec LVM, créez une partition de type LVM sur ce disque à l'aide de `fdisk` ou `parted` :
+
+```bash
+sudo fdisk /dev/sdb
+```
+
+- Tapez `n` pour créer une nouvelle partition.
+- Sélectionnez la taille et les options souhaitées.
+- Tapez `t` pour changer le type de partition.
+- Entrez `8e` pour définir la partition au format LVM.
+- Tapez `w` pour écrire les modifications.
+
+Ensuite, actualisez le noyau pour détecter les modifications :
+
+```bash
+sudo partprobe
+```
+
+### 3. **Ajouter le nouveau disque au groupe de volumes (VG)**
+Si vous avez un groupe de volumes existant et que vous voulez y ajouter le nouveau disque, exécutez la commande suivante :
+
+```bash
+sudo pvcreate /dev/sdb1
+sudo vgextend <nom_du_vg> /dev/sdb1
+```
+
+Remplacez `<nom_du_vg>` par le nom de votre groupe de volumes existant.
+
+### 4. **Étendre le volume logique (LV)**
+Une fois que l'espace a été ajouté au groupe de volumes, vous pouvez étendre le volume logique. Pour vérifier l'espace disponible :
+
+```bash
+sudo vgdisplay <nom_du_vg>
+```
+
+Ensuite, étendez le volume logique :
+
+```bash
+sudo lvextend -L +<taille>G /dev/<nom_du_vg>/<nom_du_lv>
+```
+
+Par exemple, pour ajouter 10 Go :
+
+```bash
+sudo lvextend -L +10G /dev/<nom_du_vg>/<nom_du_lv>
+```
+
+### 5. **Redimensionner le système de fichiers**
+Une fois que le volume logique est étendu, il faut redimensionner le système de fichiers pour utiliser l'espace supplémentaire. Cela dépend du type de système de fichiers que vous utilisez.
+
+- Si vous utilisez `ext4` ou `ext3` :
+
+```bash
+sudo resize2fs /dev/<nom_du_vg>/<nom_du_lv>
+```
+
+- Si vous utilisez `xfs` :
+
+```bash
+sudo xfs_growfs /dev/<nom_du_vg>/<nom_du_lv>
+```
+
+### 6. **Vérifier le redimensionnement**
+Pour vérifier que le volume logique et le système de fichiers ont bien été étendus, utilisez la commande suivante :
+
+```bash
+df -h
+```
+
+Cela devrait afficher la nouvelle taille du système de fichiers sur le volume logique.
+
+### Résumé des commandes
+1. **Ajouter un disque :**
+   ```bash
+   sudo fdisk /dev/sdb
+   ```
+2. **Créer une partition LVM sur ce disque (optionnel) :**
+   ```bash
+   sudo pvcreate /dev/sdb1
+   sudo vgextend <nom_du_vg> /dev/sdb1
+   ```
+3. **Étendre le volume logique :**
+   ```bash
+   sudo lvextend -L +10G /dev/<nom_du_vg>/<nom_du_lv>
+   ```
+4. **Redimensionner le système de fichiers :**
+   - Pour `ext4` ou `ext3` :
+     ```bash
+     sudo resize2fs /dev/<nom_du_vg>/<nom_du_lv>
+     ```
+   - Pour `xfs` :
+     ```bash
+     sudo xfs_growfs /dev/<nom_du_vg>/<nom_du_lv>
+     ```
+  
+Cela devrait permettre d'augmenter la taille de votre disque sous LVM.
