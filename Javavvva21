@@ -1,0 +1,62 @@
+Pour installer **Java 21** sur Ubuntu, vous pouvez suivre ces étapes simples :
+
+### 1. Mettre à jour le système
+Tout d'abord, mettez à jour votre système pour vous assurer que les derniers paquets sont installés.
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
+### 2. Ajouter le dépôt APT pour Java (OpenJDK)
+Java 21 est disponible via les dépôts APT standard, donc vous pouvez simplement installer OpenJDK 21. Mais si vous préférez utiliser une version Oracle JDK, il est recommandé d'ajouter le PPA de "Linux Uprising", qui contient les versions les plus récentes de Java.
+
+```bash
+sudo add-apt-repository ppa:linuxuprising/java
+sudo apt update
+```
+
+### 3. Installer OpenJDK 21
+Ensuite, vous pouvez installer OpenJDK 21 en utilisant cette commande :
+
+```bash
+sudo apt install openjdk-21-jdk
+```
+
+### 4. Vérifier l’installation
+Une fois l'installation terminée, vous pouvez vérifier la version de Java installée avec cette commande :
+
+```bash
+java -version
+```
+
+Cela devrait afficher quelque chose comme :
+
+```
+openjdk version "21"
+```
+
+### 5. Configurer la version par défaut (si nécessaire)
+Si vous avez plusieurs versions de Java installées, vous pouvez définir Java 21 comme version par défaut en exécutant :
+
+```bash
+sudo update-alternatives --config java
+```
+
+Sélectionnez le numéro correspondant à **Java 21** dans la liste.
+
+### 6. Variables d’environnement (facultatif)
+Vous pouvez également définir les variables d'environnement Java en ajoutant ces lignes au fichier `~/.bashrc` ou `/etc/environment` :
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+```
+
+Ensuite, rechargez le fichier :
+
+```bash
+source ~/.bashrc
+```
+
+Et voilà ! Vous avez installé Java 21 sur Ubuntu.
