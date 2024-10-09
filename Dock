@@ -1,0 +1,95 @@
+Pour installer la dernière version de Docker Compose sur Ubuntu, voici les étapes à suivre :
+
+### 1. Installer Docker (si ce n'est pas déjà fait)
+
+Docker Compose nécessite Docker pour fonctionner. Si Docker n'est pas encore installé, vous pouvez suivre ces étapes pour l'installer :
+
+#### 1.1 Mettre à jour le système
+
+```bash
+sudo apt update && sudo apt upgrade
+```
+
+#### 1.2 Installer les dépendances nécessaires
+
+```bash
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+```
+
+#### 1.3 Ajouter la clé GPG officielle de Docker
+
+```bash
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+```
+
+#### 1.4 Ajouter le dépôt Docker
+
+```bash
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+#### 1.5 Installer Docker
+
+```bash
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io
+```
+
+#### 1.6 Vérifier l'installation de Docker
+
+```bash
+docker --version
+```
+
+### 2. Installer Docker Compose
+
+Maintenant que Docker est installé, vous pouvez installer Docker Compose :
+
+#### 2.1 Télécharger la dernière version de Docker Compose
+
+Pour obtenir la dernière version de Docker Compose, vous devez d'abord vérifier quelle est la dernière version disponible sur [la page officielle des versions de Docker Compose](https://github.com/docker/compose/releases).
+
+Ensuite, exécutez cette commande (remplacez `VERSION` par le numéro de la dernière version, par exemple `2.20.2`):
+
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/download/VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+```
+
+Par exemple, pour la version `2.20.2`, la commande serait :
+
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/download/2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+```
+
+#### 2.2 Donner les permissions d'exécution au fichier
+
+```bash
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+#### 2.3 Vérifier l'installation de Docker Compose
+
+```bash
+docker-compose --version
+```
+
+Cela devrait afficher la version de Docker Compose que vous venez d'installer.
+
+### 3. Optionnelle : Activer et démarrer Docker au démarrage
+
+Pour que Docker démarre automatiquement à chaque démarrage du système :
+
+```bash
+sudo systemctl enable docker
+sudo systemctl start docker
+```
+
+### 4. Utiliser Docker Compose
+
+Vous pouvez maintenant utiliser Docker Compose en créant un fichier `docker-compose.yml` et en exécutant la commande suivante dans le répertoire contenant le fichier :
+
+```bash
+docker-compose up
+```
+
+Vous avez maintenant installé Docker et Docker Compose sur Ubuntu !
