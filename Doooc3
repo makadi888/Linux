@@ -1,0 +1,88 @@
+Pour installer Squatch TM (ou tout autre outil ou application) sur Docker, il faut généralement suivre quelques étapes standards. Je vais te guider à travers le processus d'installation sur Docker.
+
+### 1. Pré-requis
+- **Docker** doit être installé sur votre système. Si ce n'est pas déjà fait, vous pouvez l'installer en suivant les instructions sur [le site officiel de Docker](https://docs.docker.com/get-docker/).
+
+### 2. Vérification de la disponibilité de Squatch TM sur Docker Hub
+Avant de commencer, il faut vérifier si une image Docker officielle pour Squatch TM est disponible sur Docker Hub.
+
+- Allez sur [Docker Hub](https://hub.docker.com/) et recherchez "Squatch TM".
+- Si vous trouvez une image officielle ou communautaire, vous pourrez l'utiliser pour l'installation. Sinon, il faudra probablement créer un Dockerfile personnalisé (voir étape 4).
+
+### 3. Installation de Squatch TM depuis une image Docker
+Si vous trouvez une image Docker existante pour Squatch TM, l'installation est simple :
+
+1. Ouvrez un terminal et exécutez la commande suivante pour récupérer l'image :
+   ```bash
+   docker pull <nom-de-l'image-squatch-tm>
+   ```
+   (Remplacez `<nom-de-l'image-squatch-tm>` par le nom exact de l'image sur Docker Hub)
+
+2. Lancez ensuite un conteneur avec cette image :
+   ```bash
+   docker run -d --name squatch_tm_container -p 8080:8080 <nom-de-l'image-squatch-tm>
+   ```
+   - **-d** exécute le conteneur en arrière-plan.
+   - **--name** donne un nom au conteneur.
+   - **-p** permet de rediriger les ports (ici, 8080 de l'hôte au 8080 du conteneur).
+
+3. Vérifiez que le conteneur fonctionne correctement :
+   ```bash
+   docker ps
+   ```
+
+4. Si l'application est accessible via un navigateur, vous pouvez y accéder en allant sur `http://localhost:8080` (en supposant que l'application fonctionne sur le port 8080).
+
+### 4. Créer un Dockerfile personnalisé (si aucune image n'est disponible)
+Si vous ne trouvez pas d'image Docker officielle pour Squatch TM, vous devrez créer un **Dockerfile**. Voici comment :
+
+1. Créez un fichier `Dockerfile` dans un répertoire sur votre machine.
+
+2. Ajoutez les instructions pour installer Squatch TM. Voici un exemple de structure générale d'un Dockerfile :
+   ```dockerfile
+   FROM ubuntu:20.04
+   
+   # Installer les dépendances nécessaires
+   RUN apt-get update && apt-get install -y \
+       curl \
+       wget \
+       python3 \
+       python3-pip \
+       # ajouter d'autres dépendances si nécessaire
+   
+   # Télécharger et installer Squatch TM
+   RUN wget <url-de-telechargement-de-squatch-tm> -O /opt/squatch-tm.tar.gz \
+       && tar -xvzf /opt/squatch-tm.tar.gz -C /opt/
+
+   # Configurer l'environnement (si nécessaire)
+   WORKDIR /opt/squatch-tm
+   RUN ./install.sh  # ou un script d'installation spécifique
+
+   # Exposer les ports si nécessaire
+   EXPOSE 8080
+
+   CMD ["./start.sh"]  # ou la commande pour démarrer Squatch TM
+   ```
+
+3. Dans le même répertoire que le Dockerfile, exécutez la commande suivante pour construire l'image Docker :
+   ```bash
+   docker build -t squatch_tm_image .
+   ```
+
+4. Une fois l'image construite, vous pouvez lancer le conteneur :
+   ```bash
+   docker run -d --name squatch_tm_container -p 8080:8080 squatch_tm_image
+   ```
+
+### 5. Gestion des volumes et des données persistantes
+Si vous souhaitez que les données de Squatch TM soient persistantes même après la suppression du conteneur, vous devrez ajouter des volumes Docker :
+
+```bash
+docker run -d --name squatch_tm_container -p 8080:8080 -v /chemin/local:/chemin/conteneur squatch_tm_image
+```
+
+Cela permettra de monter un répertoire de votre hôte dans le conteneur Docker pour stocker les données de manière persistante.
+
+---
+
+En résumé, si une image Docker existe pour Squatch TM, c'est relativement simple à installer via `docker pull`. Sinon, vous devrez créer un Dockerfile pour configurer l'environnement et installer l'application manuellement.
