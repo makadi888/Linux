@@ -1,0 +1,31 @@
+dockerrrrrrs 
+version: '3'
+services:
+  squatch-tm:
+    build: .
+    container_name: squatch_tm_container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=squatch_tm_db
+    volumes:
+      - ./data/squatch_tm:/data
+
+  db:
+    image: mysql:8.0
+    container_name: squatch_tm_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: squatch_tm_db
+      MYSQL_USER: squatch_user
+      MYSQL_PASSWORD: squatch_password
+    volumes:
+      - ./data/db:/var/lib/mysql
+    ports:
+      - "3306:3306"
