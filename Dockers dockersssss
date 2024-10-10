@@ -1,0 +1,99 @@
+Si une image Docker de Squatch TM est déjà disponible sur Docker Hub, il est possible de configurer Squatch TM avec une base de données (par exemple MySQL) en utilisant cette image directement, sans avoir besoin de créer un Dockerfile personnalisé. Voici comment configurer cela avec **Docker Compose**.
+
+### Étapes pour utiliser Squatch TM avec MySQL à partir d'une image Docker :
+
+1. **Créer un fichier Docker Compose**
+
+Dans un répertoire de votre choix, créez un fichier nommé `docker-compose.yml`.
+
+2. **Ajouter la configuration pour Squatch TM et MySQL**
+
+Voici un exemple de configuration `docker-compose.yml` pour utiliser l'image Squatch TM depuis Docker Hub (en remplaçant `<image-squatch-tm>` par l'image réelle) avec une base de données MySQL :
+
+```yaml
+version: '3'
+services:
+  squatch-tm:
+    image: <image-squatch-tm>  # Remplacer par l'image Docker officielle de Squatch TM
+    container_name: squatch_tm_container
+    ports:
+      - "8080:8080"  # Adapter le port selon les besoins
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=squatch_user
+      - DB_PASSWORD=squatch_password
+      - DB_NAME=squatch_tm_db
+    volumes:
+      - ./data/squatch_tm:/data  # Volume pour les données persistantes
+
+  db:
+    image: mysql:8.0  # Utiliser MySQL version 8
+    container_name: squatch_tm_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: squatch_tm_db
+      MYSQL_USER: squatch_user
+      MYSQL_PASSWORD: squatch_password
+    volumes:
+      - ./data/db:/var/lib/mysql  # Volume pour rendre les données MySQL persistantes
+    ports:
+      - "3306:3306"  # MySQL exposé sur le port 3306
+```
+
+### Explication de la configuration :
+
+- **Service Squatch TM :**
+  - `image: <image-squatch-tm>` : Ici, vous utilisez directement l'image Docker de Squatch TM depuis Docker Hub (remplacez `<image-squatch-tm>` par le nom exact de l'image disponible sur Docker Hub).
+  - `depends_on: db` : Assurez-vous que le service "db" (MySQL) démarre avant Squatch TM.
+  - `environment` : Vous spécifiez les variables d'environnement pour connecter Squatch TM à MySQL, telles que l'hôte, le port, l'utilisateur, et le mot de passe.
+  - `volumes` : Vous montez un volume local pour rendre les données de Squatch TM persistantes.
+
+- **Service MySQL :**
+  - `image: mysql:8.0` : Vous utilisez l'image officielle MySQL version 8.
+  - `environment` : Vous configurez la base de données avec les variables comme le mot de passe root, le nom de la base de données, l'utilisateur, et son mot de passe.
+  - `volumes` : Monte un volume pour que les données MySQL soient persistantes même si le conteneur est redémarré ou supprimé.
+
+### 3. Lancer l'application avec Docker Compose
+
+Pour démarrer les services Squatch TM et MySQL, ouvrez un terminal dans le répertoire où se trouve le fichier `docker-compose.yml` et exécutez la commande suivante :
+
+```bash
+docker-compose up -d
+```
+
+Cela va :
+- Télécharger et démarrer l'image Docker de Squatch TM depuis Docker Hub.
+- Télécharger et démarrer MySQL.
+- Connecter automatiquement Squatch TM à la base de données MySQL.
+
+### 4. Vérifier le bon fonctionnement
+
+1. **Vérifiez si les conteneurs fonctionnent correctement** :
+   ```bash
+   docker-compose ps
+   ```
+   Cette commande vous montrera l'état des conteneurs.
+
+2. **Accéder à l'application** :
+   Si Squatch TM est configuré pour s'exécuter sur le port 8080 (ou un autre port défini dans le fichier), vous pouvez y accéder via un navigateur à l'adresse `http://localhost:8080`.
+
+### 5. Gestion des données persistantes
+
+Les volumes montés pour Squatch TM et MySQL dans le fichier `docker-compose.yml` assurent que les données seront persistantes, même si les conteneurs sont arrêtés ou supprimés. Les données de Squatch TM seront stockées dans `./data/squatch_tm`, et celles de MySQL dans `./data/db`.
+
+### 6. Arrêter les services
+
+Pour arrêter les conteneurs Squatch TM et MySQL, exécutez :
+
+```bash
+docker-compose down
+```
+
+Cela arrêtera et supprimera les conteneurs, mais conservera les données grâce aux volumes montés.
+
+---
+
+En résumé, vous n'avez qu'à utiliser l'image Docker existante pour Squatch TM sur Docker Hub et à l'intégrer avec MySQL via Docker Compose. Il suffit de configurer les variables d'environnement pour connecter Squatch TM à la base de données.
