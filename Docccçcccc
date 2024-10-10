@@ -1,0 +1,81 @@
+To install **Squash TM** using **Docker Compose**, follow these steps:
+
+### Prerequisites
+1. **Docker** and **Docker Compose** installed on your machine.
+   - To install Docker: [Docker Installation Guide](https://docs.docker.com/get-docker/)
+   - To install Docker Compose: [Docker Compose Installation Guide](https://docs.docker.com/compose/install/)
+
+### Steps
+
+1. **Create a `docker-compose.yml` file**:
+   - In your working directory, create a new `docker-compose.yml` file and insert the following configuration:
+
+   ```yaml
+   version: '3'
+   services:
+     mysql:
+       image: mysql:5.7
+       container_name: mysql-squashtm
+       restart: unless-stopped
+       environment:
+         MYSQL_ROOT_PASSWORD: root_password
+         MYSQL_DATABASE: squashtm
+         MYSQL_USER: squashtm
+         MYSQL_PASSWORD: squashtm_password
+       ports:
+         - "3306:3306"
+       volumes:
+         - mysql_data:/var/lib/mysql
+
+     squashtm:
+       image: squashtm/squash-tm
+       container_name: squashtm
+       depends_on:
+         - mysql
+       environment:
+         DB_HOST: mysql
+         DB_NAME: squashtm
+         DB_USER: squashtm
+         DB_PASSWORD: squashtm_password
+       ports:
+         - "8080:8080"
+       restart: unless-stopped
+
+   volumes:
+     mysql_data:
+   ```
+
+   - **Explanation**:
+     - This configuration sets up two services: **MySQL** and **Squash TM**.
+     - MySQL is configured with a root password and database credentials.
+     - Squash TM will use MySQL as its database.
+     - Both services are set to restart unless stopped manually.
+
+2. **Start Docker Compose**:
+   - Open a terminal in the directory containing your `docker-compose.yml` file.
+   - Run the following command to start the services:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+   This command will:
+   - Pull the necessary Docker images (MySQL and Squash TM).
+   - Start both containers in the background (`-d` flag).
+
+3. **Access Squash TM**:
+   - After both containers are up and running, you can access Squash TM by navigating to `http://localhost:8080` in your web browser.
+
+4. **Stop the services**:
+   - To stop the services, run the following command:
+
+   ```bash
+   docker-compose down
+   ```
+
+This will stop and remove the containers but keep the database data stored in the volume `mysql_data`.
+
+### Optional:
+You can customize this configuration by setting different ports, volumes, or database credentials based on your needs.
+
+Let me know if you need help with any specific configuration!
