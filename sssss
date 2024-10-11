@@ -1,0 +1,78 @@
+Yes, the commands you are using seem appropriate for setting up Squash TM with PostgreSQL using Docker. Let me break down what each part is doing and how you can verify the setup works:
+
+### Step-by-Step Explanation:
+
+1. **Create Docker Network**:
+   ```bash
+   docker network create squash-tm-postgresql
+   ```
+   - This creates a dedicated Docker network (`squash-tm-postgresql`) where both the PostgreSQL database and Squash TM application containers can communicate.
+
+2. **Run PostgreSQL Container**:
+   ```bash
+   docker run -it -d --name='squash-tm-pg' \
+   --network squash-tm-postgresql \
+   -e POSTGRES_USER=squashtm \
+   -e POSTGRES_PASSWORD=MustB3Ch4ng3d \
+   -e POSTGRES_DB=squashtm \
+   -v squash-tm-db-pg:/var/lib/postgresql/data \
+   postgres:13
+   ```
+   - This runs a PostgreSQL database (`postgres:13`) container and configures it with the following:
+     - `POSTGRES_USER=squashtm`: Database user.
+     - `POSTGRES_PASSWORD=MustB3Ch4ng3d`: User password.
+     - `POSTGRES_DB=squashtm`: The database Squash TM will use.
+   - The volume `squash-tm-db-pg:/var/lib/postgresql/data` ensures persistent storage for the database data.
+
+3. **Sleep Command** (Optional):
+   ```bash
+   sleep 10
+   ```
+   - This pauses execution for 10 seconds to give PostgreSQL time to initialize before starting Squash TM. If you face issues where the Squash TM container can't connect to the database, you can increase this delay.
+
+4. **Run Squash TM Container**:
+   ```bash
+   docker run -it -d --name=squash-tm \
+   --network squash-tm-postgresql \
+   -e SQTM_DB_TYPE=postgresql \
+   -e SQTM_DB_USERNAME=squashtm \
+   -e SQTM_DB_PASSWORD=MustB3Ch4ng3d \
+   -e SQTM_DB_NAME=squashtm \
+   -e SQTM_DB_HOST=squash-tm-pg \
+   -v squash-tm-logs:/opt/squash-tm/logs \
+   -v squash-tm-plugins:/opt/squash-tm/plugins \
+   -p 8090:8080 \
+   squashtest/squash-tm
+   ```
+   - This runs the Squash TM container, linked to the PostgreSQL container (`squash-tm-pg`) via the same network (`squash-tm-postgresql`).
+   - The environment variables:
+     - `SQTM_DB_TYPE=postgresql`: Specifies the use of PostgreSQL.
+     - `SQTM_DB_USERNAME`, `SQTM_DB_PASSWORD`, `SQTM_DB_NAME`, and `SQTM_DB_HOST`: Configure the Squash TM connection to PostgreSQL.
+   - Volumes:
+     - `squash-tm-logs`: Stores logs.
+     - `squash-tm-plugins`: Stores plugins.
+   - The container exposes port `8090`, mapped to Squash TM’s internal port `8080`.
+
+### Testing Your Setup:
+1. **Check Running Containers**:
+   After running both commands, check if both containers (`squash-tm-pg` and `squash-tm`) are running properly:
+   ```bash
+   docker ps
+   ```
+   This will list the containers. If they are not running, you can check logs with:
+   ```bash
+   docker logs squash-tm
+   docker logs squash-tm-pg
+   ```
+
+2. **Access Squash TM**:
+   Open your browser and go to `http://localhost:8090`. You should see the Squash TM interface.
+
+3. **Troubleshooting**:
+   - If you face issues with the database connection, try increasing the `sleep` time to ensure PostgreSQL is fully initialized before starting Squash TM.
+   - You can also inspect the database by entering the PostgreSQL container:
+     ```bash
+     docker exec -it squash-tm-pg psql -U squashtm -d squashtm
+     ```
+
+Once everything is running smoothly, you will have Squash TM installed and running with PostgreSQL on your system.
