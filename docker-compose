@@ -1,0 +1,97 @@
+Pour rendre les données des conteneurs **persistantes** en dehors des volumes Docker (c'est-à-dire sur votre système de fichiers local), vous pouvez spécifier des **montages de répertoire local** dans le fichier `docker-compose.yml`. Cela permet de stocker les données directement sur votre disque local, garantissant que même si vous supprimez les conteneurs, les données seront conservées.
+
+Voici une version modifiée de votre fichier `docker-compose.yml`, avec des volumes montés sur des répertoires locaux pour rendre les données persistantes sur votre système.
+
+### Exemple de fichier `docker-compose.yml` avec des volumes locaux
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: squash-tm-pg
+    environment:
+      POSTGRES_USER: squashtm
+      POSTGRES_PASSWORD: MustB3Ch4ng3d
+      POSTGRES_DB: squashtm
+    volumes:
+      # Montage du répertoire local pour les données PostgreSQL
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - squash-tm-network
+
+  squash-tm:
+    image: squashtest/squash-tm
+    container_name: squash-tm
+    depends_on:
+      - postgres
+    environment:
+      SQTM_DB_TYPE: postgresql
+      SQTM_DB_USERNAME: squashtm
+      SQTM_DB_PASSWORD: MustB3Ch4ng3d
+      SQTM_DB_NAME: squashtm
+      SQTM_DB_HOST: postgres
+    volumes:
+      # Montages de répertoires locaux pour les logs et les plugins
+      - ./data/squash-tm/logs:/opt/squash-tm/logs
+      - ./data/squash-tm/plugins:/opt/squash-tm/plugins
+    ports:
+      - "8090:8080"
+    networks:
+      - squash-tm-network
+
+networks:
+  squash-tm-network:
+    driver: bridge
+```
+
+### Explication des modifications :
+
+1. **Montage de volumes locaux** :
+   - Pour **PostgreSQL** : 
+     ```yaml
+     - ./data/postgres:/var/lib/postgresql/data
+     ```
+     - Les données de la base de données PostgreSQL sont stockées dans un répertoire local appelé `./data/postgres`. Ce répertoire est créé automatiquement si nécessaire.
+   - Pour **Squash TM** : 
+     - Les **logs** sont stockés dans `./data/squash-tm/logs`.
+     - Les **plugins** sont stockés dans `./data/squash-tm/plugins`.
+
+2. **Pourquoi `./data/`** ?
+   - `./data/` signifie que les données seront stockées dans un répertoire local sur votre machine, dans le sous-dossier `data` du répertoire où vous avez placé le fichier `docker-compose.yml`.
+   - Vous pouvez bien sûr personnaliser ces chemins pour pointer vers n'importe quel répertoire local en fonction de vos préférences (ex. `/home/utilisateur/squash_data`).
+
+### Commandes à exécuter :
+
+1. **Créer le fichier `docker-compose.yml`** :
+   Sauvegardez ce fichier dans le répertoire de votre projet.
+
+2. **Créer les répertoires de stockage local (facultatif)** :
+   Si Docker n'a pas encore créé les répertoires automatiquement, vous pouvez le faire manuellement :
+   ```bash
+   mkdir -p ./data/postgres
+   mkdir -p ./data/squash-tm/logs
+   mkdir -p ./data/squash-tm/plugins
+   ```
+
+3. **Démarrer les services avec Docker Compose** :
+   Exécutez la commande suivante pour démarrer les services :
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Vérifier les conteneurs** :
+   Utilisez cette commande pour vérifier si tout fonctionne correctement :
+   ```bash
+   docker-compose ps
+   ```
+
+5. **Accéder à Squash TM** :
+   Une fois les services démarrés, accédez à Squash TM à l'adresse : `http://localhost:8090`.
+
+### Avantages :
+- **Données persistantes** : Même si les conteneurs sont arrêtés ou supprimés, les données de PostgreSQL et Squash TM (logs, plugins) seront conservées dans les répertoires locaux.
+- **Facilité de sauvegarde** : Vous pouvez facilement sauvegarder ou déplacer ces répertoires pour migrer les données ou les restaurer.
+
+Avec cette approche, vous stockez les données hors des volumes Docker, directement sur votre machine, garantissant la persistance des données à long terme.
