@@ -1,0 +1,101 @@
+Pour configurer un serveur **Postfix** sur Ubuntu en tant que client SMTP qui utilise un serveur de relais SMTP pour envoyer des e-mails, voici les étapes détaillées à suivre. Cela part du principe que le serveur relais SMTP fonctionne déjà et que vous voulez configurer **Postfix** sur le client pour l'utiliser.
+
+### 1. Installer Postfix
+Tout d'abord, si Postfix n'est pas déjà installé, installez-le avec la commande suivante :
+
+```bash
+sudo apt update
+sudo apt install postfix
+```
+
+Pendant l'installation, il vous sera demandé de sélectionner le type de configuration. Choisissez **"Site Internet"** pour un serveur de base.
+
+### 2. Configurer Postfix pour utiliser un relais SMTP
+Pour configurer Postfix afin qu'il utilise un relais SMTP externe, modifiez le fichier principal de configuration de Postfix.
+
+#### Modifier le fichier de configuration Postfix :
+```bash
+sudo nano /etc/postfix/main.cf
+```
+
+Ajoutez ou modifiez les lignes suivantes :
+
+```bash
+# Spécifiez le relais SMTP
+relayhost = [IP_DU_SERVEUR_RELAIS]:PORT
+
+# Si le relais SMTP nécessite une authentification, activez SASL et définissez les options suivantes.
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+
+# Utilisez TLS pour sécuriser les connexions au serveur relais (facultatif)
+smtp_use_tls = yes
+smtp_tls_security_level = may
+
+# Spécifiez le fichier de certificats CA (requis pour certaines configurations TLS)
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+```
+
+### 3. Configurer l'authentification SASL (si nécessaire)
+Si le relais SMTP nécessite une authentification, vous devrez configurer les informations de connexion dans le fichier **sasl_passwd**.
+
+Créez le fichier `/etc/postfix/sasl_passwd` :
+
+```bash
+sudo nano /etc/postfix/sasl_passwd
+```
+
+Ajoutez les informations d'authentification dans le format suivant :
+
+```bash
+[IP_DU_SERVEUR_RELAIS]:PORT UTILISATEUR:MDP
+```
+
+Par exemple :
+```bash
+[192.168.1.2]:587 utilisateur@example.com:monmotdepasse
+```
+
+### 4. Sécuriser le fichier d'authentification
+Ensuite, sécurisez ce fichier et générez la base de données de hachage nécessaire pour Postfix :
+
+```bash
+sudo chmod 600 /etc/postfix/sasl_passwd
+sudo postmap /etc/postfix/sasl_passwd
+```
+
+### 5. Redémarrer Postfix
+Pour que les modifications prennent effet, redémarrez Postfix :
+
+```bash
+sudo systemctl restart postfix
+```
+
+### 6. Tester l'envoi d'e-mails
+Vous pouvez tester l'envoi d'un e-mail en utilisant la commande `mail` ou en créant un script simple avec `sendmail`.
+
+Installez `mailutils` si nécessaire :
+
+```bash
+sudo apt install mailutils
+```
+
+Ensuite, envoyez un e-mail de test :
+
+```bash
+echo "Ceci est un test" | mail -s "Test Postfix" destinataire@example.com
+```
+
+### 7. Vérification des logs
+Si des problèmes surviennent, consultez les logs de Postfix pour déboguer :
+
+```bash
+sudo tail -f /var/log/mail.log
+```
+
+### Remarques supplémentaires :
+- Si votre relais SMTP utilise un autre port que le port 25 (comme 587 pour TLS), assurez-vous de le spécifier dans le fichier de configuration.
+- Si le relais SMTP nécessite des certificats supplémentaires ou des configurations spécifiques pour TLS, ces options devront également être ajoutées dans le fichier de configuration `main.cf`.
+
+Avec ces étapes, votre serveur Postfix devrait pouvoir utiliser le relais SMTP sur un autre serveur pour envoyer des e-mails.
