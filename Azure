@@ -1,0 +1,65 @@
+Si vous voulez vous assurer qu'aucun utilisateur ne peut accéder à vos ressources Azure **uniquement** avec une adresse IP publique (en dehors de l'IP de l'entreprise), vous pouvez utiliser **Conditional Access (CA)** et **Network Security Groups (NSG)**.  
+
+---
+
+## **Solution 1 : Utiliser Azure Conditional Access (CA) pour Azure AD**  
+Azure **Conditional Access** permet d'exiger que l'accès aux ressources soit possible uniquement si l'utilisateur se connecte depuis un réseau approuvé (comme l'IP publique de votre entreprise).  
+
+### **Étapes pour configurer Conditional Access**  
+
+1. **Accédez à Azure AD**  
+   - Allez sur le **portail Azure**  
+   - Cherchez **"Azure Active Directory"**  
+   - Allez dans **"Security" > "Conditional Access"**  
+
+2. **Créez une nouvelle stratégie (Policy)**  
+   - Cliquez sur **"New policy"**  
+   - Nommez la stratégie : **"Restrict Public IP Access"**  
+
+3. **Sélectionnez les utilisateurs concernés**  
+   - Dans **"Assignments"**, cliquez sur **"Users"**  
+   - Sélectionnez **"All users"** (ou un groupe spécifique si nécessaire)  
+
+4. **Ajoutez la condition d'emplacement (IP autorisée uniquement)**  
+   - Dans **"Conditions"**, sélectionnez **"Locations"**  
+   - Activez **"Configure"**  
+   - Choisissez **"Include" > "Any location"**  
+   - Dans **"Exclude"**, ajoutez l'IP publique de votre entreprise (ou une plage d’IP)  
+
+5. **Bloquez l'accès aux connexions non approuvées**  
+   - Dans **"Access controls" > "Grant"**, choisissez **"Block access"**  
+
+6. **Activez la stratégie**  
+   - Mettez la stratégie en mode **"On"** et enregistrez  
+
+---
+
+## **Solution 2 : Utiliser un NSG pour bloquer l'accès aux ressources spécifiques**
+Si vous voulez restreindre l'accès aux **machines virtuelles (VMs), bases de données ou autres ressources**, configurez un **Network Security Group (NSG)**.  
+
+### **Étapes pour un NSG :**  
+1. **Accédez à votre NSG**  
+   - Dans le portail Azure, allez dans **"Network Security Groups"**  
+   - Sélectionnez l’NSG attaché à votre ressource  
+
+2. **Ajoutez une règle pour autoriser uniquement l’IP de l’entreprise**  
+   - Allez dans **"Inbound security rules"**  
+   - Cliquez sur **"Add a rule"**  
+   - **Source** : `IP Addresses`  
+   - **IP source** : `XXX.XXX.XXX.XXX/32` (remplacez par votre IP publique)  
+   - **Action** : `Allow`  
+   - **Priority** : `100` (faible pour être prioritaire)  
+
+3. **Ajoutez une règle pour bloquer tout le reste**  
+   - **Source** : `Any`  
+   - **Action** : `Deny`  
+   - **Priority** : `200`  
+
+---
+
+## **Résultat attendu**
+✅ **Les utilisateurs ne peuvent accéder aux applications cloud Azure (Teams, SharePoint, etc.) que depuis l’IP de l’entreprise**  
+✅ **L’accès aux machines virtuelles ou autres services est bloqué sauf pour l’IP de l’entreprise**  
+✅ **Toute connexion depuis une autre adresse IP publique est refusée**  
+
+Est-ce que cette solution correspond à votre besoin ?
