@@ -1,0 +1,79 @@
+Terraform ne prend pas en charge directement la gestion des projets Azure DevOps, mais il existe un fournisseur Terraform appelé `azuredevops` qui permet de créer et gérer des projets, des groupes d’utilisateurs et des autorisations dans Azure DevOps.
+
+### 1. **Installer Terraform et le provider Azure DevOps**
+Assurez-vous que vous avez :
+- Terraform installé sur votre machine
+- Un compte Azure DevOps avec les permissions adéquates
+- Un Personal Access Token (PAT) pour l'authentification
+
+Ajoutez ce provider dans votre fichier `provider.tf` :
+
+```hcl
+terraform {
+  required_providers {
+    azuredevops = {
+      source  = "microsoft/azuredevops"
+      version = "~> 0.5.0"
+    }
+  }
+}
+
+provider "azuredevops" {
+  org_service_url       = "https://dev.azure.com/votre-organisation"
+  personal_access_token = var.azure_devops_pat
+}
+```
+
+### 2. **Créer un projet Azure DevOps**
+Dans un fichier `main.tf` :
+
+```hcl
+resource "azuredevops_project" "mon_projet" {
+  name               = "MonProjet"
+  description        = "Projet créé avec Terraform"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+}
+```
+
+### 3. **Ajouter des utilisateurs au projet**
+Azure DevOps ne permet pas directement l'ajout d'utilisateurs via Terraform, mais vous pouvez les ajouter à des groupes de sécurité :
+
+#### 3.1 **Créer un groupe et ajouter des utilisateurs**
+Ajoutez ceci dans `main.tf` :
+
+```hcl
+resource "azuredevops_group" "mon_groupe" {
+  scope         = azuredevops_project.mon_projet.id
+  display_name  = "Developers"
+  description   = "Groupe des développeurs du projet"
+}
+
+resource "azuredevops_group_membership" "mon_groupe_membership" {
+  group = azuredevops_group.mon_groupe.id
+  members = [
+    "aad:\\<user-object-id-1>",
+    "aad:\\<user-object-id-2>"
+  ]
+}
+```
+
+> ⚠ **Remarque :** Vous devez récupérer les `object-id` des utilisateurs via Azure AD.
+
+### 4. **Appliquer la configuration**
+1. **Initialiser Terraform :**
+   ```sh
+   terraform init
+   ```
+2. **Vérifier le plan :**
+   ```sh
+   terraform plan
+   ```
+3. **Appliquer la configuration :**
+   ```sh
+   terraform apply -auto-approve
+   ```
+
+### Conclusion
+Avec ce setup, vous créez un projet Azure DevOps, un groupe de sécurité et ajoutez des utilisateurs à ce groupe. Pour gérer directement les utilisateurs, il faudra utiliser des scripts PowerShell avec l’API Azure DevOps.
